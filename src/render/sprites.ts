@@ -36,6 +36,8 @@ export interface SpriteSet {
   imp: [Frame, Frame];
   mage: [Frame, Frame];
   magePort: Frame;
+  toad: [Frame, Frame];
+  toadFlipped: Frame;
   bomb: [Frame, Frame];
   bombUrgent: [Frame, Frame];
   boltH: Frame;
@@ -51,6 +53,7 @@ export interface SpriteSet {
   itemU: Frame;
   itemB: Frame;
   keycap: Frame;
+  updraft: [Frame, Frame];
   termOn: [Frame, Frame];
   termOff: Frame;
   // full-bleed terrain
@@ -59,6 +62,9 @@ export interface SpriteSet {
   rock: Frame;
   hard: Frame;
   gap: [Frame, Frame];
+  // sky layer
+  cloud: Frame;
+  thunderhead: Frame;
 }
 
 export function buildSprites(): SpriteSet {
@@ -266,6 +272,145 @@ export function buildSprites(): SpriteSet {
     '.o.o.o..o.o.o...',
     '................',
   ], M);
+
+  // ---------------- toad: hopping green menace ----------------
+  const TD: Palette = {
+    o: '#0d1c08', g: '#79c94f', G: '#a4e552', d: '#3f7d2f',
+    e: '#ffd23f', m: '#274a14', b: '#e8f4c8', r: '#c96a4f',
+  };
+  const toad0 = frame([
+    '................',
+    '................',
+    '....oo....oo....',
+    '...oGGoooGGo....',
+    '..oGGGGGGGGGo...',
+    '..oGeGGGGeGGo...',
+    '..oGGGGGGGGGo...',
+    '..ogmmmmmmggo...',
+    '..oGGGGGGGGGo...',
+    '.oGGgggggggGGo..',
+    '.oGdGGGGGGGdGo..',
+    '..odgggggggdo...',
+    '..oddo...oddo...',
+    '..oo.......oo...',
+    '................',
+    '................',
+  ], { ...TD, g: '#63b32e' });
+  const toad1 = frame([
+    '................',
+    '................',
+    '................',
+    '................',
+    '....oo....oo....',
+    '...oGGoooGGo....',
+    '..oGGGGGGGGGo...',
+    '..oGeGGGGeGGo...',
+    '..oGGGGGGGGGo...',
+    '..ogmmmmmmggo...',
+    '.oGGgggggggGGo..',
+    '.oGdGGGGGGGdGo..',
+    '.odgggggggggdo..',
+    '.oddo.....oddo..',
+    '................',
+    '................',
+  ], { ...TD, g: '#63b32e' });
+  const toadFlipped = frame([
+    '................',
+    '................',
+    '................',
+    '...odo....odo...',
+    '....odo..odo....',
+    '.....odooddo....',
+    '...obbbbbbbbo...',
+    '..obbbbbbbbbbo..',
+    '..obrbbbbbbrbo..',
+    '..obbbbbbbbbbo..',
+    '..oGGGGGGGGGGo..',
+    '...oGGGGGGGGo...',
+    '....oooooooo....',
+    '................',
+    '................',
+    '................',
+  ], TD);
+
+  // ---------------- updraft: thermal spiral ----------------
+  const UP: Palette = { c: '#9fd8e8', C: '#d8f4fc', o: '#2a5a6a' };
+  const updraft0 = frame([
+    '................',
+    '......ccCc......',
+    '....cC....Cc....',
+    '...c........c...',
+    '...C....cC..C...',
+    '...c...c..c.c...',
+    '....c..C..c.....',
+    '.....c..cc......',
+    '......CC........',
+    '....cc..........',
+    '...C....cc......',
+    '...c......C.....',
+    '....Cc....c.....',
+    '......cCCc......',
+    '................',
+    '................',
+  ], UP);
+  const updraft1 = frame([
+    '................',
+    '......cCcc......',
+    '....Cc....cC....',
+    '...C........C...',
+    '...c..Cc....c...',
+    '...C.c..c...C...',
+    '.....C..c.c.....',
+    '......cc..c.....',
+    '........CC......',
+    '..........cc....',
+    '......cc....C...',
+    '.....C......c...',
+    '.....c....cC....',
+    '......ccCc......',
+    '................',
+    '................',
+  ], UP);
+
+  // ---------------- sky terrain: cloud floor / thunderhead ----------------
+  const CL: Palette = { w: '#e8f0f6', W: '#ffffff', s: '#b8cbd8', d: '#96abb8' };
+  const cloud = frame([
+    'ssssssssssssssss',
+    'swwwwwwwwwwwwwws',
+    'swWWwwwwwwWWwwws',
+    'swwwwwwwwwwwwwws',
+    'swwwwwWWwwwwwwws',
+    'swwwwwwwwwwwwwws',
+    'swwwwwwwwwwWWwws',
+    'swwWWwwwwwwwwwws',
+    'swwwwwwwwwwwwwws',
+    'swwwwwwWWwwwwwws',
+    'swwwwwwwwwwwwwws',
+    'swWWwwwwwwwWWwws',
+    'swwwwwwwwwwwwwws',
+    'swwwwwWWwwwwwwws',
+    'sddddddddddddddd',
+    'ssssssssssssssss',
+  ], CL);
+  const TH: Palette = { k: '#3a4654', K: '#4c5a6c', o: '#242c38', l: '#6a7a8e' };
+  const thunderhead = frame([
+    'oooooooooooooooo',
+    'oKKKKKKKKKKKKKko',
+    'oKllKKKKKKllKKko',
+    'oKKKKKKKKKKKKKko',
+    'oKKKKkkKKKKKKKko',
+    'oKKKKKKKKKKllKko',
+    'oKkkKKKKKKKKKKko',
+    'oKKKKKKkkKKKKKko',
+    'oKKKKKKKKKKKKKko',
+    'oKllKKKKKKKkkKko',
+    'oKKKKKKKKKKKKKko',
+    'oKKKKkkKKKKKKKko',
+    'oKKKKKKKKKllKKko',
+    'okKKKKKKKKKKKkko',
+    'okkkkkkkkkkkkkko',
+    'oooooooooooooooo',
+  ], TH);
 
   // ---------------- bombs ----------------
   const B: Palette = {
@@ -885,6 +1030,8 @@ export function buildSprites(): SpriteSet {
     imp: [imp0, imp1],
     mage: [mage0, mage1],
     magePort,
+    toad: [toad0, toad1],
+    toadFlipped,
     bomb: [bomb0, bomb1],
     bombUrgent: [bombU0, bombU1],
     boltH, boltV,
@@ -895,6 +1042,7 @@ export function buildSprites(): SpriteSet {
     oneway: { '<': owLeft, '>': owRight, '^': owUp, V: owDown },
     itemK, itemR, itemU, itemB,
     keycap,
+    updraft: [updraft0, updraft1],
     termOn: [termOn0, termOn1],
     termOff,
     wall,
@@ -902,6 +1050,8 @@ export function buildSprites(): SpriteSet {
     rock,
     hard,
     gap: [gap0, gap1],
+    cloud,
+    thunderhead,
   };
 }
 

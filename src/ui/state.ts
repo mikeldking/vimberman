@@ -8,4 +8,6 @@ export type Screen =
 export const ui = {
   screen: 'TITLE' as Screen,
   currentLevel: 1,
+  /** the ex (`:`) command line buffer; null = closed */
+  exCmd: null as string | null,
 };

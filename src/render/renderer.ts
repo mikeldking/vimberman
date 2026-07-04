@@ -1,5 +1,7 @@
 // Canvas renderer: draws the world from engine state using the pixel-art
 // atlas, with tweened entity movement, particles, screen shake and glow.
+// Also draws the "vim buffer" chrome: gridlines, a relative-number gutter
+// (set number relativenumber), and a column ruler — see docs/new-mechanics.md.
 import * as game from '../engine/engine';
 import type { Enemy, Player } from '../engine/types';
 import { buildSprites, cellHash, type Frame, type SpriteSet } from './sprites';
@@ -11,6 +13,8 @@ let canvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D;
 let sprites: SpriteSet;
 let CELL = 44;
+let GUT = 0; // left gutter width (line numbers)
+let RUL = 0; // bottom ruler height (column numbers)
 let DPR = 1;
 
 // transient view state
@@ -18,6 +22,8 @@ let shake = 0;
 let flashRed = 0;
 interface Boom { x: number; y: number; t0: number }
 let explosions: Boom[] = [];
+interface Sweep { tiles: Array<[number, number]>; t0: number }
+let sweeps: Sweep[] = [];
 interface Particle {
   x: number; y: number; vx: number; vy: number;
   age: number; ttl: number; color: string; size: number; gravity: number;
@@ -27,6 +33,10 @@ let lastFrame = 0;
 
 interface Tween { x: number; y: number; face: number }
 const tweens = new WeakMap<Player | Enemy, Tween>();
+
+function gutterOn(): boolean {
+  return game.loaded() && game.state().lv.gutter !== false;
+}
 
 export function initRenderer(el: HTMLCanvasElement): void {
   canvas = el;
@@ -40,15 +50,19 @@ export function sizeCanvas(): void {
   const st = game.loaded() ? game.state() : null;
   const W = st ? st.W : 15;
   const H = st ? st.H : 11; // menu screens get a full-size stage too
+  const chrome = gutterOn();
   // Fill the viewport: leave room for HUD, statusline, and CRT chrome.
   const availW = window.innerWidth - 90;
   const availH = window.innerHeight - 150;
-  CELL = Math.max(36, Math.min(110, Math.floor(Math.min(availW / W, availH / H))));
+  const gutFrac = chrome ? 1.3 : 0; // gutter + ruler, in cells
+  CELL = Math.max(36, Math.min(110, Math.floor(Math.min(availW / (W + gutFrac), availH / (H + gutFrac * 0.6)))));
+  GUT = chrome ? Math.floor(CELL * 0.8) : 0;
+  RUL = chrome ? Math.floor(CELL * 0.5) : 0;
   DPR = window.devicePixelRatio || 1;
-  canvas.width = Math.round(W * CELL * DPR);
-  canvas.height = Math.round(H * CELL * DPR);
-  canvas.style.width = W * CELL + 'px';
-  canvas.style.height = H * CELL + 'px';
+  canvas.width = Math.round((W * CELL + GUT) * DPR);
+  canvas.height = Math.round((H * CELL + RUL) * DPR);
+  canvas.style.width = W * CELL + GUT + 'px';
+  canvas.style.height = H * CELL + RUL + 'px';
 }
 
 // ---------- effects API (driven by fx hooks) ----------
@@ -75,6 +89,9 @@ export function addExplosion(tiles: Array<[number, number]>): void {
     }
   }
 }
+export function addSweep(tiles: Array<[number, number]>): void {
+  sweeps.push({ tiles, t0: performance.now() });
+}
 export function sparkle(x: number, y: number, color: string): void {
   for (let i = 0; i < 10; i++) {
     const a = (i / 10) * Math.PI * 2;
@@ -87,6 +104,7 @@ export function sparkle(x: number, y: number, color: string): void {
 }
 export function resetEffects(): void {
   explosions = [];
+  sweeps = [];
   particles = [];
   shake = 0;
   flashRed = 0;
@@ -139,44 +157,38 @@ function glyph(ch: string, x: number, y: number, color: string, size = 0.62, glo
   ctx.shadowBlur = 0;
 }
 
-// ---------- main loop ----------
-export function startLoop(): void {
-  requestAnimationFrame(draw);
-}
-
-function draw(now: number): void {
-  requestAnimationFrame(draw);
-  const dt = Math.min(0.05, (now - lastFrame) / 1000 || 0.016);
-  lastFrame = now;
-  updateHud();
-  if (!game.loaded()) return;
-  const st = game.state();
-
-  ctx.save();
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  ctx.imageSmoothingEnabled = false;
-  ctx.fillStyle = '#0a0f0a';
-  ctx.fillRect(0, 0, canvas.width / DPR, canvas.height / DPR);
-  if (shake > 0.3) {
-    ctx.translate((Math.random() * 2 - 1) * shake, (Math.random() * 2 - 1) * shake);
-    shake *= 0.82;
-  }
+// terrain + floor overlays for one grid (ground or sky silhouettes are
+// handled by the caller via globalAlpha)
+function drawTerrain(st: ReturnType<typeof game.state>, grid: string[][], now: number, sky: boolean): void {
   const blink = Math.floor(now / 500) % 2 === 0;
-  const anim2 = Math.floor(now / 320) % 2; // walk cycles
-  const anim2slow = Math.floor(now / 550) % 2; // ambient tiles
-
-  // ---- terrain + floor overlays ----
+  const anim2slow = Math.floor(now / 550) % 2;
   for (let y = 0; y < st.H; y++) {
     for (let x = 0; x < st.W; x++) {
-      const c = st.grid[y][x];
+      const c = grid[y][x];
       const h = cellHash(x, y);
+      if (sky) {
+        if (c === '~') continue; // open air — the ghosted ground shows through
+        if (c === '#') { sprite(sprites.thunderhead, x, y); continue; }
+        sprite(sprites.cloud, x, y);
+        if (c === '*') sprite(sprites.bush[(h + anim2slow) % 2], x, y);
+        else if (c >= 'a' && c <= 'z') glyph(c, x, y - 0.04, '#4a7a8c', 0.42);
+        else if (c === '|') drawMargin(x, y);
+        continue;
+      }
       if (c === '#') { sprite(sprites.wall, x, y); continue; }
+      if (c === '!') { sprite(sprites.wall, x, y); drawLamp(st, x, y, now); continue; }
       if (c === '~') { sprite(sprites.gap[(h + anim2slow) % 2], x, y); continue; }
       sprite(sprites.floor[h % 3], x, y);
       if (c === '%') sprite(sprites.rock, x, y);
       else if (c === '&') sprite(sprites.hard, x, y);
       else if (c === '*') sprite(sprites.bush[(h + anim2slow) % 2], x, y);
-      else if (c === 'E') {
+      else if (c === '|') drawMargin(x, y);
+      else if (c === '@') {
+        sprite(sprites.updraft[anim2slow], x, y, { alpha: 0.9, glow: 6, glowColor: '#9fd8e8' });
+      } else if (c === '?') {
+        sprite(sprites.keycap, x, y, { glow: blink ? 9 : 4, glowColor: '#ffd23f' });
+        glyph('?', x, y - 0.07, '#ffd23f', 0.42, 6);
+      } else if (c === 'E') {
         const pulse = 8 + 5 * Math.sin(now / 260);
         sprite(sprites.exit[anim2slow], x, y, { glow: pulse, glowColor: '#33ff66' });
       } else if (c >= 'a' && c <= 'z') {
@@ -194,8 +206,201 @@ function draw(now: number): void {
       else if (c === 'B') sprite(sprites.itemB, x, y, { glow: 6, glowColor: '#ffe12e' });
     }
   }
+}
 
-  // ---- mage telegraph ----
+function drawMargin(x: number, y: number): void {
+  // a thin bracket hugging the near wall — vim's sign column
+  ctx.save();
+  ctx.strokeStyle = 'rgba(95, 251, 222, 0.55)';
+  ctx.lineWidth = Math.max(2, CELL * 0.06);
+  const pad = CELL * 0.16;
+  ctx.beginPath();
+  ctx.moveTo(x * CELL + pad, y * CELL + pad);
+  ctx.lineTo(x * CELL + pad, (y + 1) * CELL - pad);
+  ctx.moveTo((x + 1) * CELL - pad, y * CELL + pad);
+  ctx.lineTo((x + 1) * CELL - pad, (y + 1) * CELL - pad);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawLamp(st: ReturnType<typeof game.state>, x: number, y: number, now: number): void {
+  const l = st.linters.find((li) => li.x === x && li.y === y);
+  if (!l) return;
+  const s = game.linterCycle(l);
+  const blink = Math.floor(now / 180) % 2 === 0;
+  const color = s === 'idle' ? '#3a4a3e' : s === 'warn' ? (blink ? '#ffbb33' : '#8a6a1f') : '#ff3b3b';
+  ctx.save();
+  ctx.fillStyle = color;
+  if (s !== 'idle') { ctx.shadowBlur = 12; ctx.shadowColor = color; }
+  ctx.beginPath();
+  ctx.arc((x + 0.5) * CELL, (y + 0.5) * CELL, CELL * 0.18, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+// amber wash over tiles a warning linter is about to sweep
+function drawLinterWarnings(st: ReturnType<typeof game.state>, now: number): void {
+  if (st.layer !== 'ground') return;
+  const pulse = 0.08 + 0.05 * Math.sin(now / 160);
+  for (const l of st.linters) {
+    if (game.linterCycle(l) !== 'warn') continue;
+    ctx.fillStyle = `rgba(255, 187, 51, ${pulse})`;
+    for (const [x, y] of game.linterTiles(l)) {
+      ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
+    }
+  }
+}
+
+// ---------- the vim-buffer chrome: gridlines, gutter, ruler ----------
+function drawGridlines(st: ReturnType<typeof game.state>): void {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(51, 255, 102, 0.06)';
+  ctx.lineWidth = 1;
+  for (let x = 1; x < st.W; x++) {
+    ctx.beginPath(); ctx.moveTo(x * CELL + 0.5, 0); ctx.lineTo(x * CELL + 0.5, st.H * CELL); ctx.stroke();
+  }
+  for (let y = 1; y < st.H; y++) {
+    ctx.beginPath(); ctx.moveTo(0, y * CELL + 0.5); ctx.lineTo(st.W * CELL, y * CELL + 0.5); ctx.stroke();
+  }
+  // cursorline / cursorcolumn wash
+  ctx.fillStyle = 'rgba(51, 255, 102, 0.045)';
+  ctx.fillRect(0, st.player.y * CELL, st.W * CELL, CELL);
+  ctx.fillRect(st.player.x * CELL, 0, CELL, st.H * CELL);
+  ctx.restore();
+}
+
+function drawGutterAndRuler(st: ReturnType<typeof game.state>, now: number): void {
+  const p = st.player;
+  const dim = st.mode === 'terminal' ? 0.3 : 1;
+  const count = st.pending.count ? parseInt(st.pending.count, 10) : 0;
+  const pulse = Math.floor(now / 250) % 2 === 0;
+  ctx.save();
+  ctx.globalAlpha = dim;
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  // left gutter: relative numbers, absolute (1-based) on the cursor row
+  for (let y = 0; y < st.H; y++) {
+    const rel = Math.abs(y - p.y);
+    const cur = y === p.y;
+    const hot = count > 0 && rel === count && !cur;
+    ctx.font = `${cur ? 'bold ' : ''}${Math.floor(CELL * (cur ? 0.4 : 0.34))}px ${FONT}`;
+    ctx.fillStyle = cur ? '#ffbb33' : hot && pulse ? '#b6ffce' : '#2f5c33';
+    if (hot) { ctx.shadowBlur = 8; ctx.shadowColor = '#33ff66'; } else ctx.shadowBlur = 0;
+    ctx.fillText(String(cur ? y + 1 : rel), GUT - CELL * 0.16, y * CELL + CELL * 0.54);
+  }
+  ctx.shadowBlur = 0;
+  // bottom ruler: relative column distances, 0 under the cursor, blank past 9
+  ctx.textAlign = 'center';
+  for (let x = 0; x < st.W; x++) {
+    const rel = Math.abs(x - p.x);
+    if (rel > 9) continue;
+    const cur = x === p.x;
+    const hot = count > 0 && rel === count && !cur;
+    ctx.font = `${cur ? 'bold ' : ''}${Math.floor(CELL * 0.3)}px ${FONT}`;
+    ctx.fillStyle = cur ? '#ffbb33' : hot && pulse ? '#b6ffce' : '#2f5c33';
+    if (hot) { ctx.shadowBlur = 8; ctx.shadowColor = '#33ff66'; } else ctx.shadowBlur = 0;
+    ctx.fillText(String(rel), GUT + x * CELL + CELL * 0.5, st.H * CELL + RUL * 0.55);
+  }
+  ctx.restore();
+
+  // count-pending: outline the four candidate landing tiles
+  if (count > 0) {
+    ctx.save();
+    ctx.translate(GUT, 0);
+    ctx.strokeStyle = `rgba(182, 255, 206, ${pulse ? 0.5 : 0.25})`;
+    ctx.lineWidth = 2;
+    for (const [dx, dy] of [[count, 0], [-count, 0], [0, count], [0, -count]] as const) {
+      const x = p.x + dx;
+      const y = p.y + dy;
+      if (x < 0 || y < 0 || x >= st.W || y >= st.H) continue;
+      ctx.strokeRect(x * CELL + 3, y * CELL + 3, CELL - 6, CELL - 6);
+    }
+    ctx.restore();
+  }
+}
+
+// find-pending: spotlight the letter tiles in the cursor row
+function drawFindTargets(st: ReturnType<typeof game.state>, now: number): void {
+  const op = st.pending.op;
+  if (!op || !'fFtT'.includes(op)) return;
+  const grid = st.layer === 'sky' ? st.skyGrid! : st.grid;
+  const y = st.player.y;
+  const pulse = 0.25 + 0.15 * Math.sin(now / 180);
+  ctx.save();
+  for (let x = 1; x < st.W - 1; x++) {
+    const c = grid[y][x];
+    if (c >= 'a' && c <= 'z') {
+      ctx.fillStyle = `rgba(255, 210, 63, ${pulse})`;
+      ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
+    }
+  }
+  ctx.restore();
+}
+
+function drawEnemy(e: Enemy, now: number, alpha = 1): void {
+  const anim2 = Math.floor(now / 320) % 2;
+  const t = tween(e);
+  if (e.type === 'zombie') {
+    sprite(sprites.zombie[anim2], t.x, t.y, { flip: t.face < 0, alpha });
+  } else if (e.type === 'imp') {
+    sprite(sprites.imp[anim2], t.x, t.y, { flip: t.face < 0, alpha });
+  } else if (e.type === 'toad') {
+    if ((e.flip ?? 0) > 0) {
+      sprite(sprites.toadFlipped, t.x, t.y, { alpha });
+      const urgent = (e.flip ?? 0) <= 2;
+      glyph(String(e.flip), t.x + 0.3, t.y - 0.32, urgent ? '#ff9d9d' : '#ffe9a0', 0.28);
+    } else {
+      // the tell: it squats on the tick before it hops
+      const f = e.hop === 1 ? sprites.toad[1] : sprites.toad[anim2];
+      sprite(f, t.x, t.y, { flip: t.face < 0, alpha });
+    }
+  } else if (e.mstate === 'port') {
+    sprite(sprites.magePort, t.x, t.y, { alpha: 0.55 * alpha, glow: 8, glowColor: '#54ffe0' });
+  } else {
+    sprite(sprites.mage[anim2], t.x, t.y, { flip: t.face < 0, glow: 4, glowColor: '#b18cff', alpha });
+  }
+}
+
+// ---------- main loop ----------
+export function startLoop(): void {
+  requestAnimationFrame(draw);
+}
+
+function draw(now: number): void {
+  requestAnimationFrame(draw);
+  const dt = Math.min(0.05, (now - lastFrame) / 1000 || 0.016);
+  lastFrame = now;
+  updateHud();
+  if (!game.loaded()) return;
+  const st = game.state();
+  const aloft = st.layer === 'sky';
+
+  ctx.save();
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = '#0a0f0a';
+  ctx.fillRect(0, 0, canvas.width / DPR, canvas.height / DPR);
+  if (shake > 0.3) {
+    ctx.translate((Math.random() * 2 - 1) * shake, (Math.random() * 2 - 1) * shake);
+    shake *= 0.82;
+  }
+  const blink = Math.floor(now / 500) % 2 === 0;
+  const anim2 = Math.floor(now / 320) % 2;
+
+  if (GUT || RUL) drawGutterAndRuler(st, now);
+
+  ctx.save();
+  ctx.translate(GUT, 0);
+
+  // ---- ground pass (ghosted when aloft) ----
+  ctx.save();
+  if (aloft) ctx.globalAlpha = 0.25;
+  drawTerrain(st, st.grid, now, false);
+  drawLinterWarnings(st, now);
+  if (!aloft) drawGridlines(st);
+  drawFindTargets(st, now);
+
+  // mage telegraph
   for (const e of st.enemies) {
     if (e.type === 'mage' && e.target) {
       sprite(sprites.telegraph[Math.floor(now / 160) % 2], e.target[0], e.target[1], {
@@ -204,7 +409,7 @@ function draw(now: number): void {
     }
   }
 
-  // ---- bombs ----
+  // bombs
   for (const b of st.bombs) {
     const urgent = b.fuse <= 2;
     const set = urgent ? sprites.bombUrgent : sprites.bomb;
@@ -214,14 +419,24 @@ function draw(now: number): void {
     glyph(String(Math.max(0, b.fuse)), b.x + 0.3, b.y - 0.32, urgent ? '#ff9d9d' : '#ffe9a0', 0.28);
   }
 
-  // ---- projectiles ----
+  // projectiles
   for (const p of st.projectiles) {
     sprite(p.dx !== 0 ? sprites.boltH : sprites.boltV, p.x, p.y, {
       flip: p.dx < 0, glow: 10, glowColor: '#b18cff',
     });
   }
 
-  // ---- explosions (420ms, 4 sprite frames) ----
+  // linter beams (450ms flash)
+  sweeps = sweeps.filter((sw) => now - sw.t0 < 450);
+  for (const sw of sweeps) {
+    const age = (now - sw.t0) / 450;
+    ctx.fillStyle = `rgba(255, 80, 80, ${0.5 * (1 - age)})`;
+    for (const [x, y] of sw.tiles) {
+      ctx.fillRect(x * CELL, y * CELL + CELL * 0.28, CELL, CELL * 0.44);
+    }
+  }
+
+  // explosions (420ms, 4 sprite frames)
   explosions = explosions.filter((ex) => now - ex.t0 < 420);
   for (const ex of explosions) {
     const age = (now - ex.t0) / 420;
@@ -229,18 +444,37 @@ function draw(now: number): void {
     sprite(f, ex.x, ex.y, { glow: 16 * (1 - age), glowColor: '#ffd23f', scale: 1 + age * 0.25 });
   }
 
-  // ---- enemies ----
-  for (const e of st.enemies) {
-    const t = tween(e);
-    if (e.type === 'zombie') {
-      sprite(sprites.zombie[anim2], t.x, t.y, { flip: t.face < 0 });
-    } else if (e.type === 'imp') {
-      sprite(sprites.imp[anim2], t.x, t.y, { flip: t.face < 0 });
-    } else if (e.mstate === 'port') {
-      sprite(sprites.magePort, t.x, t.y, { alpha: 0.55, glow: 8, glowColor: '#54ffe0' });
+  // enemies (ground layer)
+  for (const e of st.enemies) drawEnemy(e, now);
+  ctx.restore(); // end ground pass
+
+  // ---- sky pass ----
+  if (st.skyGrid) {
+    ctx.save();
+    if (aloft) {
+      drawTerrain(st, st.skyGrid, now, true);
+      drawGridlines(st);
+      drawFindTargets(st, now);
+      // the welcoming committee, seen through the cloud floor — you must be
+      // able to track your landing (docs/new-mechanics.md, sky rendering)
+      for (const e of st.enemies) drawEnemy(e, now, 0.35);
+      for (const b of st.bombs) {
+        const f = (b.fuse <= 2 ? sprites.bombUrgent : sprites.bomb)[0];
+        sprite(f, b.x, b.y, { alpha: 0.35 });
+      }
     } else {
-      sprite(sprites.mage[anim2], t.x, t.y, { flip: t.face < 0, glow: 4, glowColor: '#b18cff' });
+      // faint silhouettes so the cloud route can be pre-read from the ground
+      ctx.globalAlpha = 0.13;
+      for (let y = 0; y < st.H; y++) {
+        for (let x = 0; x < st.W; x++) {
+          const c = st.skyGrid[y][x];
+          if (c === '~') continue;
+          if (c === '#') sprite(sprites.thunderhead, x, y, { alpha: 0.22 });
+          else sprite(sprites.cloud, x, y);
+        }
+      }
     }
+    ctx.restore();
   }
 
   // ---- player ----
@@ -249,7 +483,9 @@ function draw(now: number): void {
     sprite(sprites.playerDead, pt.x, pt.y);
   } else if (!(st.player.iframes > 0 && blink)) {
     sprite(sprites.player[anim2], pt.x, pt.y, {
-      flip: pt.face < 0, glow: 5, glowColor: '#33ff66',
+      flip: pt.face < 0,
+      glow: aloft ? 14 : 5,
+      glowColor: aloft ? '#d8f4fc' : '#33ff66',
     });
   }
 
@@ -266,6 +502,7 @@ function draw(now: number): void {
     ctx.fillRect(p.x * CELL - s / 2, p.y * CELL - s / 2, s, s);
   }
   ctx.globalAlpha = 1;
+  ctx.restore(); // end GUT translate
   ctx.restore();
 
   // ---- damage flash ----

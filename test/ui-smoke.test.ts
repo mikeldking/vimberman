@@ -56,11 +56,20 @@ describe('ui smoke', () => {
     dom.key('Escape');
   });
 
+  it('locked motions are free and refused until their keycap is collected', () => {
+    game.loadLevel(3); // level 4 teaches `i`; a fresh save hasn't collected it
+    dom.els.overlay.classList.add('hidden');
+    game.key('i');
+    expect(game.state().keys).toBe(0); // locked keys cost nothing
+    expect(game.state().tick).toBe(0); // and give enemies no turn
+    expect(game.state().echo).toContain('unmapped');
+  });
+
   it('opens the terminal editor UI on a code-tile', () => {
-    // drive level 4 directly through the engine for the termbox check
+    // drive level 4 through the engine; the first step sweeps the edit keycap
     game.loadLevel(3);
     dom.els.overlay.classList.add('hidden');
-    for (const k of '4ljjhh') game.key(k);
+    for (const k of 'lllljjhh') game.key(k);
     game.key('i');
     dom.frames(2);
     expect(game.state().mode).toBe('terminal');

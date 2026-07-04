@@ -1,8 +1,10 @@
 # VIMBERMAN
 
-A Bomberman-like for the browser where every move is a vim motion. Ten levels
-that teach vim progressively — from `hjkl` to `ciw` — under bomb fuses,
-keystroke budgets, and enemies that move only when you type.
+A Bomberman-like for the browser where every move is a vim motion. Thirteen
+levels that teach vim progressively — from `hjkl` to `ciw` and `Ctrl-u` —
+under bomb fuses, keystroke budgets, and enemies that move only when you type.
+Motions are Metroid-style powerups: collect a keycap `?` to add its motion to
+your vocabulary, permanently.
 
 ## Play
 
@@ -43,9 +45,17 @@ publishes `dist/` to Pages. One-time setup: repo
 | `w` `b` `e` | hop between words of lettered tiles, soaring over gaps and enemies |
 | `f{c}` `F{c}` `t{c}` `T{c}` `;` `,` | dash along the row to letter `{c}` |
 | `0` `$` `gg` `G` | slide to row/column ends, sweeping up items |
+| `Ctrl-u` `Ctrl-d` | ride an updraft into the cloud layer / drop back down |
 | `i` | edit the code-tile underfoot |
 | `x` | drop an armed bomb |
 | `u` | rewind one tick |
+| `:` | free ex command line — `:help` `:map` `:hint` `:q` `:q!` |
+
+Flying over a **toad** (`w`/`e`/`f`…) flips it helpless for six turns; walk
+onto a flipped toad to squash it for +2 budget. The playfield reads like a
+buffer with `relativenumber`: the gutter counts rows for you (see 4 → type
+`4j`), the ruler counts columns, and a pending count lights up its landing
+tiles.
 
 ### The world
 
@@ -61,8 +71,13 @@ mage telegraphs its teleport with a rune circle.
 - **Zombie `Z`** — half-speed chaser. Punishes wasted keystrokes.
 - **Imp `&`** — drops its own bombs. Its blasts open rocks too; bait it into
   mining for you, or into fragging its friends.
+- **Toad `Q`** — hops two tiles every third turn, clearing pits. Walking
+  can't shake it; a flight motion over it flips it onto its back.
 - **Mage `M`** — teleports on a readable 5-turn cycle and fires bolts down its
   row and column. Never linger aligned with the rune.
+- **The linter `!`** — not a creature, a hazard: sweeps its whole row on a
+  six-turn cycle (three dark, two amber, then fire). Only the margins `|` at
+  the row ends are safe — `0` and `$` snap you to them from anywhere.
 
 Some enemies patrol fixed lanes; the free-roamers hunt.
 
@@ -73,7 +88,7 @@ no DOM — and notifies the UI through overridable `fx` hooks.
 
 | Path | Role |
 |---|---|
-| `src/levels.ts` | 10 levels as ASCII maps + terminals, bushes, budgets |
+| `src/levels.ts` | 13 levels as ASCII maps + terminals, bushes, keycaps, linters, sky layers, budgets |
 | `src/engine/` | pure game logic — motions, terminals, bombs, AI, undo. No DOM. |
 | `src/render/sprites.ts` | procedural pixel-art atlas: 16×16 sprites as validated character grids |
 | `src/render/renderer.ts` | canvas draw loop: sprite animation, tweening, particles, shake, glow |
@@ -90,9 +105,10 @@ npm test               # vitest: solvability + engine rules + UI smoke + sprite 
 npx tsc --noEmit       # strict typecheck
 ```
 
-`test/solve.test.ts` replays a hand-authored keystroke script per level through
-the real engine and proves every level is completable within its keystroke
-budget using only the commands taught so far. `test/engine.test.ts` pins the
+`test/solve.test.ts` replays hand-authored keystroke scripts per level through
+the real engine: the authored speedrun must win at or under par (par is
+achievable, by proof), and named alternate routes (safe/clever) must win within
+the budget — every level is solvable multiple distinct ways. `test/engine.test.ts` pins the
 core rules (bonk costs, blast shapes, hard-rock thresholds, undo limits).
 `test/ui-smoke.test.ts` boots the full app against a stub DOM and beats level 1
 through the real keydown handler. `test/sprites.test.ts` validates every pixel

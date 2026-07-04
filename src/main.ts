@@ -3,16 +3,21 @@ import './style.css';
 import * as game from './engine/engine';
 import { LEVELS } from './levels';
 import {
-  addExplosion, damageFlash, initRenderer, kick, sparkle, startLoop,
+  addExplosion, addSweep, damageFlash, initRenderer, kick, sparkle, startLoop,
 } from './render/renderer';
 import { snd } from './ui/audio';
 import {
-  handleKeydown, resumeGame, showClear, showDead, showFail, showPause, toast, showTitle,
+  handleKeydown, noteDeath, resumeGame, showClear, showDead, showFail, showPause,
+  toast, showTitle,
 } from './ui/screens';
 import { updateTermbox } from './ui/termbox';
-import type { ItemType } from './engine/types';
+import { persist, save } from './ui/save';
+import type { ItemType, VocabGroup } from './engine/types';
 
 game.setLevels(LEVELS);
+// progressive disclosure: the UI plays with the collected vocabulary only
+// (the engine itself defaults to everything-unlocked for tests/headless use)
+game.setVocab(new Set<VocabGroup>(save.keycaps));
 
 const ITEM_COLORS: Record<ItemType, string> = {
   K: '#ffd23f', R: '#ff8c1a', U: '#26c6da', B: '#33ff66',
@@ -36,6 +41,7 @@ game.fx.item = (type) => {
 game.fx.win = () => setTimeout(showClear, 350);
 game.fx.death = (msg) => {
   damageFlash();
+  noteDeath(msg);
   setTimeout(() => showDead(msg), 450);
 };
 game.fx.fail = () => setTimeout(showFail, 250);
@@ -46,6 +52,31 @@ game.fx.exitTerm = () => updateTermbox();
 game.fx.telegraph = () => snd.port();
 game.fx.tick = () => updateTermbox();
 game.fx.collectBush = () => snd.item();
+game.fx.flip = (n) => { snd.flip(); toast(n > 1 ? `${n} toads flipped` : 'toad flipped — squash it for +2'); };
+game.fx.squash = () => {
+  snd.squash();
+  const p = game.state().player;
+  sparkle(p.x, p.y, '#a4e552');
+  toast(game.state().echo);
+};
+game.fx.sweep = (tiles) => { snd.sweep(); kick(3); addSweep(tiles); };
+game.fx.rise = () => snd.rise();
+game.fx.drop = () => snd.drop();
+game.fx.keycap = (group) => {
+  snd.keycap();
+  const p = game.state().player;
+  sparkle(p.x, p.y, '#ffd23f');
+  toast(game.state().echo);
+  // keycaps persist across levels and sessions
+  if (!save.keycaps.includes(group)) {
+    save.keycaps.push(group);
+    persist();
+  }
+};
+game.fx.locked = () => {
+  snd.error();
+  toast('grey slots in the tray are keycaps you haven\'t found yet', 'locked');
+};
 
 initRenderer(document.getElementById('game') as HTMLCanvasElement);
 window.addEventListener('keydown', handleKeydown);

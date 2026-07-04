@@ -68,4 +68,14 @@ export const snd = {
   death: () => tone('sawtooth', 220, 55, 0.4, 0.22),
   rescue: () => tone('triangle', 200, 800, 0.18, 0.18),
   port: () => tone('sine', 900, 300, 0.12, 0.1),
+  flip: () => tone('triangle', 700, 180, 0.16, 0.16), // boing, downward
+  squash: () => tone('square', 150, 60, 0.12, 0.2),
+  sweep: () => tone('sawtooth', 1400, 200, 0.25, 0.12),
+  rise: () => tone('triangle', 220, 880, 0.22, 0.14),
+  drop: () => tone('triangle', 880, 220, 0.18, 0.14),
+  keycap: () => { // three-note "keycap click" install chime
+    tone('square', 523, 523, 0.06, 0.12);
+    setTimeout(() => tone('square', 659, 659, 0.06, 0.12), 70);
+    setTimeout(() => tone('triangle', 1047, 1047, 0.14, 0.16), 140);
+  },
 };

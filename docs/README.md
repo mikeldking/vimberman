@@ -22,6 +22,18 @@ Read in this order if you're new to the project:
    (engine vs. UI), the state shape, determinism/seeded RNG, save format,
    and the test/CI strategy that keeps all of the above honest.
 
+Design expansions (the v2 rework):
+
+7. **[level-audit.md](level-audit.md)** — the designer audit of the
+   original ten levels and the multi-path solvability framework that
+   drove the 13-level campaign.
+8. **[new-mechanics.md](new-mechanics.md)** — toads (flippable enemies),
+   the linter sweep (`0`/`$` with teeth), the relative-number gutter, and
+   the cloud layer (`Ctrl-u`/`Ctrl-d`).
+9. **[progression-and-juice.md](progression-and-juice.md)** — keycap
+   motion unlocks (progressive disclosure), the layered hint system, golf
+   scoring/stats, and the `:` command line.
+
 ## One-paragraph summary
 
 Vimberman is a Bomberman-like where the only inputs are vim motions and
@@ -29,9 +41,12 @@ edits. The world advances one tick per completed keystroke command — so
 `12l` costs the enemies one turn, but `llllllllllll` costs them twelve.
 Bombs aren't picked up; they're earned by opening a broken code-tile with
 `i` and fixing the word inside using real vim edit commands, then armed and
-dropped with `x`. Ten levels teach vim from `hjkl` up through `ciw`,
-tightening keystroke budgets as the moveset grows, so the game's difficulty
-curve **is** a vim curriculum.
+dropped with `x`. Motions themselves are collectible: each level's keycap
+pickup adds its motion group to your permanent vocabulary. Thirteen levels
+teach vim from `hjkl` up through `ciw` and `Ctrl-u`/`Ctrl-d` (a cloud
+layer), tightening keystroke budgets as the moveset grows, so the game's
+difficulty curve **is** a vim curriculum — and every level is proven by
+test to be solvable along multiple distinct routes, with par achievable.
 
 ## Source of truth
 

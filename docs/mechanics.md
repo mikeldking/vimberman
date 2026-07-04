@@ -76,6 +76,17 @@ tuned per level.
 | `i` | On a code-tile (`T`), opens the terminal editor. Elsewhere, a no-op error. | `normalKey` case `i` |
 | `x` | In the world: drops an armed bomb. In a code-tile: deletes a character. | `dropBomb` / `termKey` |
 | `u` | Rewinds one world tick (see Undo below). Also the death-rescue key. | `worldUndo` / `rescue` |
+| `Ctrl-u` / `Ctrl-d` | On an updraft `@`: rise to the sky layer / drop back to clear ground. | `riseToSky` / `dropToGround` |
+| `:` | Opens the free ex command line (UI-side; the engine never sees it). | `src/ui/screens.ts` → `exKey` |
+
+Motions are **gated by vocabulary**: until a motion group's keycap (`?`
+tile) has been collected, pressing its key is *free* — no keystroke, no
+tick, just a dry echo. Locked ≠ bonk: a bonk is a legal command that
+failed (costs a turn); a locked key is not in your language yet, same
+class as arrow keys. The engine defaults to everything-unlocked
+(`setVocab(null)`) so tests and headless use are unaffected; the UI opts
+in with the save's collected groups. See
+`docs/progression-and-juice.md`.
 
 All motions accept a numeric count prefix (`P.pending.count`), and all of
 them go through the same "did this move actually happen" gate before
@@ -102,8 +113,9 @@ calls `bonk()` instead, which still burns a tick, matching real vim's
 - `%` (soft rock, rendered `▒`): destroyed by any blast, no radius
   requirement.
 - `&` (hard rock, rendered `▓`): only destroyed by a blast with radius
-  `>= 3`, i.e. requires at least two `R` (radius) pickups. This is a
-  deliberate late-game gate — see level 9/10 bush placement.
+  `>= 3` — the player starts at radius 2, so one `R` (radius) pickup
+  reaches the threshold. This is a deliberate late-game gate — see the
+  `R` bush placement in the levels that contain `&`.
 - `#` (wall): always blocks blast propagation entirely.
 
 ## Bombs: the fiction *is* the mechanic
@@ -190,6 +202,30 @@ Constraints that make undo a resource, not a safety net:
   Design implication: never rely on undo to survive your *own* blast —
   plan the exit before you drop the bomb.
 - Undo charges start at 3 and are topped up only by `U` bushes.
+
+## The newer systems (summaries — full specs in docs/new-mechanics.md)
+
+- **Toads (`Q`)** — flippable hoppers: any flight motion passing over one
+  knocks it belly-up for 6 ticks; walking onto a flipped toad squashes it
+  for +2 budget. See `docs/bestiary.md` → Toad.
+- **Linter rows (`!` emitter, `|` margins)** — a row-sweeping hazard on a
+  6-tick cycle (3 idle, 2 amber warn, 1 fire). Everything standing in the
+  swept interior dies; margins are never swept; `0`/`$` snap to them from
+  anywhere. The beam kills occupants only — it never breaks terrain,
+  detonates bombs, or wipes undo history (only explosions do that). State
+  is derived from the tick counter (`linterCycle`), so it snapshots for
+  free.
+- **The sky layer (`sky` map, `@` updrafts, `Ctrl-u`/`Ctrl-d`)** — a
+  second grid above the ground. Damage and contact are same-layer only;
+  ground enemies keep hunting your coordinates while you're aloft (the
+  imp won't lay bombs and the mage won't fire at a player in the clouds).
+  No bombs, terminals, exits, or enemies up there in v1. All motions work
+  identically aloft on the sky grid.
+- **Keycaps (`?`)** — motion-unlock pickups; see the vocabulary note in
+  Motions above.
+- **The gutter** — pure presentation: relative line numbers, a column
+  ruler, and count-pending highlights (`src/render/renderer.ts` →
+  `drawGutterAndRuler`). Level 1 opts out via `LevelDef.gutter: false`.
 
 ## Win / fail / death states
 

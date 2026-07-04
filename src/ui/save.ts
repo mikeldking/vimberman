@@ -1,4 +1,5 @@
 // Persistent progress in localStorage.
+import type { VocabGroup } from '../engine/types';
 
 export interface LevelRecord {
   bestKeys: number;
@@ -6,16 +7,24 @@ export interface LevelRecord {
 }
 
 export interface SaveData {
-  v: 1;
+  v: 2;
   unlocked: number;
+  /** collected keycap vocab groups (progressive disclosure) */
+  keycaps: VocabGroup[];
   levels: Record<string, LevelRecord>;
   settings: { sound: boolean };
 }
 
 const SAVE_KEY = 'vimberman.save.v1';
 
+/** which level (1-based) teaches each vocab group — used for save migration:
+ * reaching past a teaching level implies owning its keycap. */
+export const GROUP_LEVEL: Record<VocabGroup, number> = {
+  core: 0, count: 2, find: 3, edit: 4, word: 5, line: 6, cw: 8, inner: 11, sky: 12,
+};
+
 function fresh(): SaveData {
-  return { v: 1, unlocked: 1, levels: {}, settings: { sound: true } };
+  return { v: 2, unlocked: 1, keycaps: ['core'], levels: {}, settings: { sound: true } };
 }
 
 export const save: SaveData = fresh();
@@ -23,9 +32,19 @@ try {
   const raw = localStorage.getItem(SAVE_KEY);
   if (raw) {
     const d = JSON.parse(raw);
-    if (d && d.v === 1) {
+    if (d && (d.v === 1 || d.v === 2)) {
       Object.assign(save, d);
+      save.v = 2;
       save.settings = { sound: true, ...d.settings };
+      // v1 saves (and any level-skips) imply the keycaps of every level reached
+      const owned = new Set<VocabGroup>(Array.isArray(d.keycaps) ? d.keycaps : []);
+      owned.add('core');
+      for (const g in GROUP_LEVEL) {
+        if (GROUP_LEVEL[g as VocabGroup] !== 0 && save.unlocked > GROUP_LEVEL[g as VocabGroup]) {
+          owned.add(g as VocabGroup);
+        }
+      }
+      save.keycaps = [...owned];
     }
   }
 } catch {
@@ -43,5 +62,6 @@ export function persist(): void {
 export function resetProgress(): void {
   save.unlocked = 1;
   save.levels = {};
+  save.keycaps = ['core'];
   persist();
 }

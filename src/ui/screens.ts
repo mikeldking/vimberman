@@ -18,6 +18,11 @@ let repeatKey = '';
 let repeatCount = 0;
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
 const toastCount: Record<string, number> = {};
+// adaptive-nudge session state (see docs/progression-and-juice.md §2)
+let helpBack: (() => void) | null = null;
+let bonkRing: boolean[] = [];
+let deathsBy: Record<string, number> = {};
+let failsThisLevel = 0;
 
 function show(html: string): void {
   $('panel').innerHTML = html;
@@ -92,8 +97,9 @@ function renderSelect(): void {
   })}<div class="foot">j/k move · gg/G ends · Enter play · Esc back</div>`);
 }
 
-function showHelp(): void {
+function showHelp(back?: () => void): void {
   ui.screen = 'HELP';
+  helpBack = back ?? null;
   slMode('MENU');
   const rows: Array<[string, string]> = [
     ['h j k l', 'move left / down / up / right'],
@@ -101,19 +107,21 @@ function showHelp(): void {
     ['w b e', 'hop to next / previous word, word end — flies over gaps'],
     ['f{c} F{c}', 'dash right / left to lettered tile {c}; t/T stop short'],
     ['; ,', 'repeat last f/t dash, reversed with ,'],
-    ['0 $', 'slide to start / end of row'],
+    ['0 $', 'slide to start / end of row — and snap to linter margins |'],
     ['gg G', 'slam to top / bottom of column'],
+    ['^U ^D', 'ride an updraft @ into the clouds / drop back down'],
     ['i', 'open the code-tile under you (INSERT the fix, Esc to commit)'],
     ['x r{c} ~ s', 'in a code-tile: delete char, replace char, flip case, substitute'],
     ['cw ciw', 'in a code-tile: change word / change inner word'],
     ['x', 'in the world: drop an armed bomb (fuse 6 turns, plus-blast)'],
     ['u', 'undo one world-tick (charges are precious; u also cheats death)'],
+    [':', 'command line — :help :map :hint :q (thinking is free)'],
     ['Esc', 'cancel pending keys / leave code-tile / pause'],
   ];
   show(`<h2>THE SACRED KEYS</h2>
     <div style="font-size:13.5px">${rows.map(([k, d]) =>
       `<div><span class="kbd">${k.padEnd(11)}</span> ${d}</div>`).join('')}</div>
-    <div class="foot">every keypress spends budget — enemies move when you do · Esc back</div>`);
+    <div class="foot">every keypress spends budget — enemies move when you do · flying over a toad flips it · Esc back</div>`);
 }
 
 function showSettings(): void {
@@ -130,6 +138,7 @@ function renderSettings(): void {
 
 export function showIntro(n: number): void {
   ui.screen = 'INTRO';
+  if (n !== ui.currentLevel) { deathsBy = {}; failsThisLevel = 0; }
   ui.currentLevel = n;
   const lv = game.getLevels()[n - 1];
   slMode('MENU');
@@ -143,9 +152,19 @@ export function startLevel(n: number): void {
   game.loadLevel(n - 1);
   sizeCanvas();
   ui.screen = 'GAME';
+  ui.exCmd = null;
+  bonkRing = [];
   resetEffects();
   hide();
   updateTermbox();
+}
+
+// after 3 fails/deaths on a level this session, the reference line leaks out
+function ghostOfPar(): string {
+  const lv = game.getLevels()[ui.currentLevel - 1];
+  if (failsThisLevel < 3 || !lv.solution) return '';
+  const opening = lv.solution.split(/\s+/).slice(0, 4).join(' ');
+  return `<div class="dim" style="margin-top:8px">the ghost of par whispers: <span class="kbd">${opening} …</span></div>`;
 }
 
 export function showClear(): void {
@@ -165,12 +184,40 @@ export function showClear(): void {
   snd.clear();
   for (let i = 0; i < stars; i++) setTimeout(snd.star, 500 + i * 300);
   const last = n >= game.getLevels().length;
+  // golf + postmortem stats (docs/progression-and-juice.md §3)
+  const diff = st.keys - st.par;
+  const golf = diff < 0 ? `<span class="stars">(−${-diff}) GOLFED</span>` : diff === 0 ? '<span class="stars">machine-precise</span>' : '';
+  const fav = Object.entries(st.cmdCounts).sort((a, b) => b[1] - a[1])[0];
+  const quip = st.bonks === 0 ? 'zero bonks. the walls never felt you.'
+    : st.bonks >= 6 ? `the level won ${st.bonks} arguments.`
+    : st.keys <= st.par ? 'The keyboard fears you.'
+    : stars === 2 ? 'Tighten those motions.' : 'It compiles. Barely.';
   show(`<h1>LEVEL CLEAR</h1>
     <div style="font-size:22px" class="stars">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>
-    <div style="margin-top:8px">KEYS <span class="kbd">${st.keys}</span> / par ${st.par} ${isBest ? '<span class="stars">— new best!</span>' : ''}</div>
-    <div class="dim">${lv.name} refactored. ${st.keys <= st.par ? 'The keyboard fears you.' : stars === 2 ? 'Tighten those motions.' : 'It compiles. Barely.'}</div>
+    <div style="margin-top:8px">KEYS <span class="kbd">${st.keys}</span> / par ${st.par} ${golf} ${isBest ? '<span class="stars">— new best!</span>' : ''}</div>
+    <div class="dim">bonks ${st.bonks}${fav ? ` · favorite motion <span class="kbd">${fav[0]}</span> ×${fav[1]}` : ''}</div>
+    <div class="dim">${lv.name} refactored. ${quip}</div>
     ${last ? '<div style="margin-top:10px" class="stars">You beat VIMBERMAN. :wq and go touch grass.</div>' : ''}
     <div class="foot">${last ? '' : 'Enter next level · '}r replay · Esc menu</div>`);
+}
+
+const POSTMORTEM: Record<string, string> = {
+  zombie: 'zombies step every other turn. you have counts. do the math.',
+  imp: 'imps flee lit fuses. herd it, don\'t chase it.',
+  mage: 'the mage telegraphs ◌ a full turn early. stop sharing rows with it.',
+  toad: 'toads hop every third turn — or fly over one and see what happens.',
+  linter: 'the lamp blinks twice before it fires. margins are rent-free.',
+  blast: 'your blast radius grows with every R you eat. respect your own work.',
+};
+function deathCause(msg: string): string | null {
+  for (const k of ['zombie', 'imp', 'mage', 'toad', 'linter', 'blast']) if (msg.includes(k)) return k;
+  return null;
+}
+/** called by main.ts the instant a death happens, before the DEAD card */
+export function noteDeath(msg: string): void {
+  failsThisLevel++;
+  const cause = deathCause(msg);
+  if (cause) deathsBy[cause] = (deathsBy[cause] || 0) + 1;
 }
 
 export function showDead(msg: string): void {
@@ -178,19 +225,24 @@ export function showDead(msg: string): void {
   const st = game.state();
   const canU = game.canRescue();
   snd.death();
+  const cause = deathCause(msg);
+  const lesson = cause && deathsBy[cause] >= 2 ? `<div class="dim" style="margin-top:8px">${POSTMORTEM[cause]}</div>` : '';
   show(`<h1 class="redx">YOU DIED</h1>
     <div>@ was ${msg}.</div>
+    ${lesson}${ghostOfPar()}
     ${canU ? `<div style="margin-top:8px">Press <span class="kbd">u</span> to undo fate — ${st.player.undo} charge${st.player.undo > 1 ? 's' : ''} left.</div>` : '<div class="dim" style="margin-top:8px">No undo can save you now.</div>'}
     <div class="foot">${canU ? 'u rewind · ' : ''}r retry · Esc menu</div>`);
 }
 
 export function showFail(): void {
   ui.screen = 'FAIL';
+  failsThisLevel++;
   const st = game.state();
   snd.error();
   show(`<h1 class="redx">OUT OF KEYSTROKES</h1>
     <div>The budget of ${st.limit} is spent. The cursor grows still.</div>
     <div class="dim" style="margin-top:8px">Tip: ${st.lv.teaches} — big motions cost one keystroke-ish, not ten.</div>
+    ${ghostOfPar()}
     <div class="foot">r retry · Esc menu</div>`);
 }
 
@@ -221,24 +273,123 @@ function menuNav(k: string, rerender: () => void, pick: () => void, back: (() =>
   else if ((k === 'Escape' || k === 'h') && back) { pendingG = false; back(); }
 }
 
+// ---------- the ex (`:`) command line — free; thinking costs nothing ----------
+function runExCommand(cmd: string): void {
+  const st = game.state();
+  const vocab = game.getVocab();
+  switch (cmd.trim()) {
+    case 'help':
+      showHelp(() => resumeGame());
+      break;
+    case 'map': {
+      const owned = game.VOCAB_GROUPS.filter((g) => !vocab || vocab.has(g.id));
+      const missing = game.VOCAB_GROUPS.length - owned.length;
+      st.echo = 'mapped: ' + owned.map((g) => `[${g.label}]`).join(' ') +
+        (missing ? ` · ${missing} keycap${missing > 1 ? 's' : ''} still in the box` : ' · full keyboard');
+      break;
+    }
+    case 'hint':
+      st.echo = st.lv.hint ?? 'no hint. the map is the hint.';
+      break;
+    case 'q':
+      showSelect();
+      break;
+    case 'q!':
+      startLevel(ui.currentLevel);
+      break;
+    case 'wq':
+      st.echo = 'you\'re not done refactoring.';
+      break;
+    case '':
+      break;
+    default:
+      st.echo = 'E: not an editor command: ' + cmd;
+      snd.error();
+  }
+}
+function exKey(k: string): void {
+  if (k === 'Escape') { ui.exCmd = null; return; }
+  if (k === 'Enter') {
+    const cmd = ui.exCmd!;
+    ui.exCmd = null;
+    runExCommand(cmd);
+    return;
+  }
+  if (k === 'Backspace') {
+    if (!ui.exCmd) { ui.exCmd = null; return; }
+    ui.exCmd = ui.exCmd.slice(0, -1);
+    return;
+  }
+  if (k.length === 1) ui.exCmd += k;
+}
+
+// scan the player's row for a lettered tile strictly beyond them (nudges)
+function letterBeyond(dir: number): string | null {
+  const st = game.state();
+  const grid = st.layer === 'sky' ? st.skyGrid! : st.grid;
+  for (let x = st.player.x + dir; x > 0 && x < st.W - 1; x += dir) {
+    const c = grid[st.player.y][x];
+    if (c >= 'a' && c <= 'z') return c;
+  }
+  return null;
+}
+
 function gameKey(k: string): void {
   if (!game.loaded()) return;
   const st = game.state();
   if (st.status === 'won' || st.status === 'fail') return;
-  // "try a count" coaching
-  if (st.mode === 'normal' && 'hjkl'.includes(k)) {
+  const vocab = game.getVocab();
+  // the ex command line swallows keys while open, and ':' opens it for free
+  if (ui.exCmd !== null) { exKey(k); return; }
+  if (k === ':' && st.status === 'play' && st.mode === 'normal' && !st.pending.count && !st.pending.op) {
+    ui.exCmd = '';
+    return;
+  }
+  // "try a count" coaching, plus the find-nudge for long unbroken walks
+  if (st.mode === 'normal' && 'hjkl'.includes(k) && !st.pending.count) {
     if (k === repeatKey) {
       repeatCount++;
       if (repeatCount === 4) toast(`try 4${k} instead of ${k.repeat(4)}`, 'count');
+      if (repeatCount === 6 && (k === 'h' || k === 'l') && (!vocab || vocab.has('find'))) {
+        const c = letterBeyond(k === 'l' ? 1 : -1);
+        if (c) toast(`psst — ${k === 'l' ? 'f' : 'F'}${c} was one keystroke. your pinky is doing cardio.`, 'find');
+      }
     } else { repeatKey = k; repeatCount = 1; }
   } else repeatKey = '';
   const beforeMode = st.mode;
+  const beforeX = st.player.x;
+  const beforeY = st.player.y;
   game.key(k);
   if (st.mode !== beforeMode) updateTermbox();
+  // gap-nudge: bonked sideways into a pit while owning w
+  const bonked = (st.echo || '').startsWith('E:');
+  if (bonked && (k === 'h' || k === 'l') && st.player.x === beforeX && st.player.y === beforeY
+      && (!vocab || vocab.has('word'))) {
+    const grid = st.layer === 'sky' ? st.skyGrid! : st.grid;
+    const adj = grid[beforeY]?.[beforeX + (k === 'l' ? 1 : -1)];
+    if (adj === '~' && letterBeyond(k === 'l' ? 1 : -1)) {
+      toast('gaps stop feet, not flights — w soars over ~', 'gap');
+    }
+  }
+  // bonk-spam: three E: echoes inside the last six keypresses
+  bonkRing.push(bonked);
+  if (bonkRing.length > 6) bonkRing.shift();
+  if (bonkRing.filter(Boolean).length === 3) {
+    toast('three bonks. the wall remains undefeated. Esc, breathe, look.', 'bonkspam');
+    bonkRing = [];
+  }
   if (['w', 'b', 'e', 'f', 'F', '0', '$', 'G'].includes(st.lastCmd?.slice(-1)) && st.mode === 'normal') snd.slide();
 }
 
 export function handleKeydown(e: KeyboardEvent): void {
+  // Ctrl-u / Ctrl-d are real inputs (the sky layer); other chords pass through
+  if (e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'u' || e.key === 'd')) {
+    if (ui.screen === 'GAME') {
+      e.preventDefault();
+      gameKey(e.key === 'u' ? '<C-u>' : '<C-d>');
+    }
+    return;
+  }
   if (e.metaKey || e.ctrlKey) return;
   const k = e.key;
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(k)) {
@@ -260,11 +411,16 @@ export function handleKeydown(e: KeyboardEvent): void {
       }, showTitle);
       break;
     case 'HELP':
-      if (k === 'Escape' || k === 'h' || k === 'q') showTitle();
+      if (k === 'Escape' || k === 'q' || (k === 'h' && !helpBack)) {
+        const back = helpBack;
+        helpBack = null;
+        (back ?? showTitle)();
+      }
       break;
     case 'SETTINGS':
       if (confirmReset && k === 'y') {
         resetProgress();
+        game.setVocab(new Set(save.keycaps));
         confirmReset = false;
         renderSettings();
         toast('progress wiped. clean buffer.');

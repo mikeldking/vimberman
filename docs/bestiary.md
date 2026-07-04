@@ -1,16 +1,19 @@
 # Bestiary
 
-Three enemy types, each teaching a different lesson about the turn system
+Four enemy types, each teaching a different lesson about the turn system
 and each introduced to the player before it's used against them at full
 difficulty. All enemy logic lives in `src/engine/engine.ts` (`zombieTick`, `impTick`,
-`mageTick`); rendering is in `src/render/renderer.ts` (the `enemies` draw pass over the pixel-art atlas).
+`mageTick`, `toadTick`); rendering is in `src/render/renderer.ts` (the `enemies` draw pass over the pixel-art atlas).
 
 Enemies share one structural choice: patrol-leashed enemies (`e.leash ===
 'row'|'col'`, set per-instance via a level's `enemyOpts`) never chase —
-they sweep their lane back and forth (`patrolTick`) regardless of type.
-Only un-leashed enemies run their type's hunting AI. This lets a level
-author place the *same* enemy type as either a predictable obstacle
-(leashed) or an active threat (free-roaming) without new code.
+they sweep their lane back and forth (`patrolTick`; toads patrol in hops)
+regardless of type, mages included. Only un-leashed enemies run their
+type's hunting AI. This lets a level author place the *same* enemy type as
+either a predictable obstacle (leashed) or an active threat (free-roaming)
+without new code. Zombies additionally accept `enemyOpts.phase` to control
+which tick-parity they step on — an authoring knob for keeping scripted
+chases intact when a level's opening changes.
 
 ## Zombie (`Z`)
 
@@ -60,6 +63,30 @@ author place the *same* enemy type as either a predictable obstacle
 - Introduced in level 3 ("LEAP OF FAITH") as a leashed patrol first,
   before appearing free-roaming and bomb-planting in later levels.
 
+## Toad (`Q`)
+
+**Role: the enemy that walking cannot answer — flight is the weapon.**
+
+- Runs a readable 3-tick hop cycle (`toadTick`): two crouch ticks, then a
+  hop of **up to 2 tiles** toward the player, greedy-axis like the zombie.
+  The hop's intermediate tile is *flown over* — only solid terrain blocks
+  it — so toads clear the gaps `~` that stop every other walker. You
+  cannot ditch a toad at a pit.
+- The renderer shows the tell: it visibly squats on the tick before it
+  hops (`hop === 1`).
+- **Flipping:** any completed horizontal flight motion (`w b e f F t T ;
+  ,`) whose swept span crosses the toad knocks it onto its back for a
+  6-tick countdown (rendered like a bomb fuse). While flipped it is
+  harmless and walkable; the player entering its tile squashes it for
+  **+2 keystrokes** of budget. `t`/`T` stopping one short flips nothing —
+  the `f` vs `t` distinction has teeth. On wake-up it spends one full
+  crouch tick before it may hop (telegraph contract).
+- Dies to blasts and linter sweeps like anything else (no squash refund —
+  only the boot pays out).
+- Introduced in level 7 ("FLIP THE SCRIPT") with free-roamers and a
+  row-leashed metronome variant; design rationale in
+  `docs/new-mechanics.md`.
+
 ## Mage (`M`)
 
 **Role: a telegraphed ranged threat that punishes staying aligned.**
@@ -96,23 +123,27 @@ Two details make this readable rather than cheap:
   column. Never linger aligned with the rune." (3 cooldown + 1 telegraph +
   1 port ≈ the "5-turn" framing players experience.)
 
-Introduced in level 9 ("WARPED WORDS") alongside `~`/`ciw`, and again in
-the finale (level 10) alongside every other enemy type at once.
+Introduced in level 11 ("WARPED WORDS") alongside `~`/`ciw`, and again in
+the finale (level 13) alongside every other enemy type at once.
 
-## Design rationale: why exactly three, and this order
+## Design rationale: why these four, and this order
 
 - **Zombie** teaches "the clock is your keystrokes, not your reflexes."
 - **Imp** teaches "the environment (rocks, bushes, other enemies) is
   interactive, and enemies can be used against each other/the terrain."
+- **Toad** teaches "your motions are not just travel — the right motion
+  is also the counterplay."
 - **Mage** teaches "position relative to threats matters even at a
   distance, and the game will always warn you before it hurts you."
 
 Together they escalate from *reactive positioning* (zombie) to *active
-environmental play* (imp) to *anticipatory reasoning* (mage) — which
-mirrors the escalation in the vim-motion curriculum itself, from raw
-movement (`hjkl`) to structural awareness (`w`/`b`/`e`, one-way tiles) to
-precise, deliberate edits (`ciw`, `~`). See `docs/level-design.md` for how
-enemy introductions are paced against motion introductions level-by-level.
+environmental play* (imp) to *motion-as-weapon* (toad) to *anticipatory
+reasoning* (mage) — which mirrors the escalation in the vim-motion
+curriculum itself, from raw movement (`hjkl`) to structural awareness
+(`w`/`b`/`e`, one-way tiles) to precise, deliberate edits (`ciw`, `~`).
+The linter (a row-sweeping hazard, not a creature) is documented in
+`docs/new-mechanics.md`. See `docs/level-design.md` for how enemy
+introductions are paced against motion introductions level-by-level.
 
 ## Adding a new enemy type (guidance for future work)
 

@@ -8,7 +8,7 @@ module layout and the invariants worth preserving if you extend the code.
 
 | Path | Role | Depends on |
 |---|---|---|
-| `src/levels.ts` | Pure data — 10 levels as ASCII maps, terminal definitions, bush contents, budgets, enemy leash options. | `engine/types` |
+| `src/levels.ts` | Pure data — 13 levels as ASCII maps (+ optional sky layers), terminal definitions, bush contents, keycaps, linters, budgets, reference solutions, enemy leash options. | `engine/types` |
 | `src/engine/types.ts` | All shared domain types (`GameState`, `Enemy`, `LevelDef`, `FxHooks`, …). | nothing |
 | `src/engine/rng.ts` | Seeded mulberry32 PRNG. | nothing |
 | `src/engine/engine.ts` | Pure game logic — motions, terminal editing, bombs/blast, enemy AI, undo, win/fail/death. No DOM access at all. | `rng`, `types` |
@@ -96,11 +96,16 @@ unlocked" or "best score." Shape, under `localStorage` key
 `vimberman.save.v1`:
 
 ```
-{ v: 1, unlocked: <int>, levels: { [n]: { bestKeys, stars } }, settings: { sound } }
+{ v: 2, unlocked: <int>, keycaps: [<vocab group ids>],
+  levels: { [n]: { bestKeys, stars } }, settings: { sound } }
 ```
 
-Written on level clear and settings changes; read once at boot with a version
-check and merged over defaults so a corrupt/missing save never crashes boot.
+Written on level clear, keycap pickup, and settings changes; read once at
+boot with a version check and merged over defaults so a corrupt/missing
+save never crashes boot. v1 saves migrate transparently: reaching past a
+teaching level implies owning its keycap (`GROUP_LEVEL` in `save.ts`).
+The engine's vocabulary gate defaults to everything-unlocked; only
+`main.ts` opts the UI into `save.keycaps` via `setVocab`.
 
 ## Testing & CI
 

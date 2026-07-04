@@ -1,136 +1,130 @@
 # Level Design
 
-Vimberman has exactly ten levels, and they are not just ten maps — they're
+Vimberman has thirteen levels, and they are not just thirteen maps — they're
 a vim curriculum with a Bomberman skin. Every level introduces **exactly
 one** new motion or concept (`src/levels.ts` → `teaches`), stated once on the
 intro card (`intro: [...]`), and that level's layout is built to require
 that specific technique rather than merely permit it. Content lives
 entirely in `src/levels.ts`; this doc explains the pedagogy and tuning behind
-it.
+it. For the audit that produced this campaign shape and the multi-path
+authoring rules, see `docs/level-audit.md`; for the keycap unlock system,
+`docs/progression-and-juice.md`.
 
 ## The curriculum, level by level
 
-| # | Name | Teaches | Par / Limit | Slack ratio | New enemy/hazard | Terminals |
+| # | Name | Teaches | Keycap granted | Par / Limit | New enemy/hazard | Routes proven |
 |---|---|---|---|---|---|---|
-| 1 | BABY STEPS | `h j k l` | 40 / 110 | 2.75× | — (no enemies) | 0 |
-| 2 | COUNT THE CORRIDORS | counts: `10l` `6j` | 9 / 26 | 2.89× | Zombie (free-roam) | 0 |
-| 3 | LEAP OF FAITH | `f{c}` `F{c}` (vs `t`/`T`) | 30 / 75 | 2.50× | Imp (leashed), gaps `~` | 0 |
-| 4 | BUGFIX BOMBS | `i` `x` `r` — earn bombs | 62 / 135 | 2.18× | Zombie (free-roam) | 2 |
-| 5 | WORD BRIDGES | `w` `b` `e` | 26 / 60 | 2.31× | Zombie (leashed) | 0 |
-| 6 | THE LONG WAY | `0` `$` `gg` `G` | 55 / 115 | 2.09× | Zombie (free-roam) | 1 |
-| 7 | REWRITE THE RULES | `cw` | 80 / 140 | 1.75× | Imp + Zombie (both leashed) | 2 |
-| 8 | AGAINST THE CURRENT | one-way tiles `< > ^ v` | 75 / 130 | 1.73× | Imp (leashed) + Zombie (free-roam) | 1 |
-| 9 | WARPED WORDS | `~` and `ciw`; hard rock `&` | 105 / 160 | 1.52× | Mage (free-roam) + Zombie (leashed) | 2 |
-| 10 | THE FINAL REFACTOR | everything, no new trick | 115 / 175 | 1.52× | Zombie×2 (leashed) + Imp + Mage | 2 |
+| 1 | BABY STEPS | `h j k l` | — (`core` is free) | 40 / 110 | — (no enemies) | 1 |
+| 2 | COUNT THE CORRIDORS | counts + the gutter | `count` | 9 / 26 | Zombie (free-roam) | 2 |
+| 3 | LEAP OF FAITH | `f{c}` `F{c}` (vs `t`/`T`) | `find` | 25 / 65 | Imp (leashed), gaps `~` | 1 |
+| 4 | BUGFIX BOMBS | `i` `x` `r` — earn bombs | `edit` | 62 / 135 | Zombie (free-roam) | 1 |
+| 5 | WORD BRIDGES | `w` `b` `e` | `word` | 8 / 18 | Imp (leashed) | 3 |
+| 6 | THE LONG WAY | `0` `$` `gg` `G` | `line` | 60 / 118 | Zombie (free-roam) | 1 |
+| 7 | FLIP THE SCRIPT | flight motions flip toads | — | 9 / 22 | Toads ×4 | 3 |
+| 8 | REWRITE THE RULES | `cw` | `cw` | 32 / 65 | Zombie (col-leashed) | 2 |
+| 9 | AGAINST THE CURRENT | one-way tiles | — | 73 / 130 | Imp (leashed) + Zombie | 1 |
+| 10 | MIND THE MARGINS | `0`/`$` as linter anchors | — | 15 / 34 | Linter rows `!` `\|` | 2 |
+| 11 | WARPED WORDS | `~` and `ciw`; hard rock `&` | `inner` | 112 / 165 | Mage (free-roam) | 1 |
+| 12 | HEAD IN THE CLOUDS | `Ctrl-u` / `Ctrl-d` | `sky` | 10 / 26 | The sky layer; zombies ×4 | 2 |
+| 13 | THE FINAL REFACTOR | everything, two wings | — | 36 / 60 | all threats | 3 |
 
-("Slack ratio" = `limit / par` — how much room for error the budget gives
-you beyond a perfect run. See "Tuning the budget" below.)
+"Routes proven" = distinct scripted lines asserted in `test/solve.test.ts`
+(speedrun always; safe/clever/greedy where the map supports them).
 
 ## Why this order
 
 The sequence climbs two ladders at once, kept in lockstep:
 
 **Motion ladder** (what you can do):
-`hjkl` → counted motions → dash-to-char (`f`/`F`) → bomb-crafting basics
-(`i x r`) → word-hopping (`w b e`) → line/file jumps (`0 $ gg G`) →
+`hjkl` → counted motions (with the relative-number gutter as instrument) →
+dash-to-char (`f`/`F`) → bomb-crafting basics (`i x r`) → word-hopping
+(`w b e`) → line/file jumps (`0 $ gg G`) → flight-as-weapon (toads) →
 whole-word replace (`cw`) → irreversible commitment (one-way tiles) →
-precision edits (`~`, `ciw`) → synthesis (level 10 adds nothing new).
+line anchors under fire (linter rows) → precision edits (`~`, `ciw`) →
+the vertical axis (`Ctrl-u`/`Ctrl-d`) → synthesis (level 13 adds nothing
+new).
 
-**Threat ladder** (what's hunting you)**:**
+**Threat ladder** (what's hunting you):
 no enemies → slow greedy chaser (zombie) → a leashed obstacle version of a
 new enemy (imp) before it ever roams free → environmental hazards (gaps,
-rock, hard rock) layered in → multiple enemies at once → all three enemy
-types simultaneously in the finale.
+rock) → toads (the enemy that walking cannot answer) → periodic row hazards
+(linter) → the mage → all threats simultaneously in the finale.
 
-The two ladders are **deliberately offset by one rung**: a new motion is
-taught in a level with an already-familiar threat configuration (or none),
-so the player is never learning a new vim trick and a new enemy behavior
-in the same level. Level 3, for example, teaches `f`/`F` against a
-leashed (predictable) imp — the imp itself isn't the lesson, the dash
-motion is. Compare level 8, which introduces no new enemy at all
-(reuses imp + zombie) so that the one-way-tile mechanic gets the player's
-undivided attention.
+Three placement rules worth preserving:
 
-Bomb-crafting (`i x r`, level 4) is deliberately placed **after** movement
-basics and counts are solid (levels 1–3) but **before** the more exotic
-motions — because every subsequent level assumes the player already knows
-how to detour to a code-tile, open it, and fix a word under time pressure.
-It's the one "new system" lesson in an otherwise "new motion" curriculum,
-so it gets its own dedicated level rather than being folded into a motion
-lesson.
-
-`cw` (level 7) and `~`/`ciw` (level 9) are separated by a full level
-(one-way tiles, level 8) rather than taught back to back, even though
-they're both "edit the code-tile buffer" tricks — this avoids stacking two
-new editor commands in a row, keeping the "one new thing per level" rule
-intact even for edit-mode-only lessons.
+- **New-mechanic levels reinforce old motions.** Toads (7) weaponize the
+  flight motions taught in 3 and 5; the linter (10) sharpens the `0`/`$`
+  taught in 6; the sky (12) reuses word-flight aloft. A new system is never
+  introduced alongside a new motion.
+- **Keycap-less levels are deliberate.** Levels 7, 9, 10 and 13 grant no
+  keycap — their lesson is judgment (flip timing, commitment, anchors,
+  synthesis), not vocabulary. The HUD tray visibly not growing is itself
+  the signal.
+- **Breathers are short and choice-dense, not easy-long.** Levels 2, 5, 7
+  and 12 all have single-digit-to-low pars with real route choice; they sit
+  between the long edit-heavy levels (4, 6, 8, 11) as palate cleansers.
 
 ## Tuning the budget: par and limit
 
-Every level sets two numbers, and the *gap* between them is itself a
-tuning knob, not an afterthought:
+Every level sets two numbers, and both are now **proven by test**, not
+picked from feel:
 
-- `par` is the number that assumes efficient play using the level's full
-  taught vocabulary — it's effectively "solved with the intended
-  technique," not "theoretical minimum keystrokes."
-- `limit` is `par` plus headroom for exploration, mistakes, a bonk or two,
-  and one avoidable detour.
+- `par` equals the measured length of the level's authored `solution`
+  (the speedrun) — `test/solve.test.ts` asserts the solution wins with
+  `keys <= par`, so *3 stars is always achievable* and par can never
+  silently rot when a map changes.
+- `limit` is par plus headroom for exploration, mistakes, a bonk or two,
+  and one avoidable detour. Alternate routes (safe/clever) are asserted to
+  win within `limit`.
 
-The slack ratio (`limit/par`) **shrinks monotonically across the game**,
-from ~2.9× on level 2 down to ~1.5× on levels 9–10. Early levels are
-forgiving because the player is still learning a motion for the first
-time and will fumble it; late levels assume mastery of everything taught
-so far and punish inefficiency more sharply, because by level 9 falling
-back to single-step `hjkl` instead of the newer motions should no longer
-be "acceptable, just costly" — it should risk the budget outright. This is
-the mechanical enforcement of pillar #3 in `docs/premise.md`
-("efficiency is the score").
-
-When adding or rebalancing a level, don't pick `par`/`limit` from feel
-alone — `test/solve.test.ts` encodes a scripted, hand-authored keystroke
-solution for every level and asserts it wins within `limit`
-(see `docs/architecture.md` → Testing). Treat that solution as the
-reference "intended efficient playthrough," and set `par` close to its
-length, then set `limit` per the slack-ratio trend above.
+Slack (`limit/par`) is no longer strictly monotonic: levels that teach a
+new *system* (7 toads, 10 linter, 12 sky) run generous (~2.2–2.6×) because
+the player is learning rules, while synthesis levels run tight (11 at
+~1.5×, 13 at ~1.65×) because everything is known. The finale's slack budget
+assumes the speedrun's four deliberate mage-dodge keys, not wait-filler —
+see the wait-tax findings in `docs/level-audit.md`.
 
 ## Level anatomy: recurring structural choices
 
-- **Bushes as a drip-feed, not a stockpile.** Every level places 1–3
-  bushes, and the type of item hidden is chosen to matter *for that
-  level specifically* — e.g. level 9/10 place `R` (radius) bushes because
-  those levels contain hard rock `&`, which needs radius ≥ 3 to crack.
-  Don't scatter items generically; place them to make one specific later
-  decision (a rock, a budget crunch, a rescue) possible.
-- **Leashed enemies are how a level author "reuses" a threat type safely.**
-  Any enemy can be pinned to a row or column via `enemyOpts` regardless of
-  its type — this is used constantly to introduce an enemy type gently
-  (as a fixed hazard to route around) before or instead of unleashing its
-  full AI. See `docs/bestiary.md`.
-- **Terminal (code-tile) placement is a detour cost, not a gate.** Every
-  level with terminals places them off the critical path, at a distance
-  that costs a deliberate number of extra motions — the player always has
-  the option to skip a code-tile if they don't need the bomb it grants
-  (some levels don't strictly require any bomb use to reach `E`; bombs
-  are there to open shortcuts through rock, not to gate the exit).
+- **Multi-path by construction.** Since the audit, maps are loops with
+  alternate gates, not corridors: a rock you bomb OR a gap you word-fly, a
+  zombie lane you time OR a bridge you fall from mid-span. One mandatory
+  door per teaching gate keeps the taught motion load-bearing; everything
+  else has at least two answers. The verified route scripts live in
+  `test/solve.test.ts` — treat them as the map's documentation.
+- **Keycaps sit at the mouth of the level.** A `?` tile within 1–3 tiles
+  of spawn, on (or beside) the forced path, reachable with only prior
+  vocabulary. When a level has two route mouths (5, 8), each gets a `?` of
+  the same group — spares in the box.
+- **Bushes as a drip-feed, not a stockpile.** The item type is chosen to
+  matter *for that level*: K bushes refund the scenic route's cost, `R`
+  only appears in levels containing hard rock `&`, `B` only before rock
+  gates. Slides sweep items for free, so a bush mid-shaft rewards `gg`/`G`
+  without costing a detour.
+- **Leashed enemies are how a level author "reuses" a threat type safely** —
+  but never in a 1-wide corridor the player must cross (that's a forced
+  wait, the anti-pattern the audit measured at 52 dead keys in the old
+  finale). Give the lane letters and gaps so `2w`/`2b` flies the whole cage
+  in one keystroke.
+- **Enemy phase is an authoring knob.** `enemyOpts` can set a zombie's
+  tick-parity (`phase`) so a level plays identically after an opening-move
+  change — used in level 6 to keep its scripted chase intact after the
+  keycap pickup added a tick.
 - **Hazard tiles are introduced textually before mechanically.** Gaps
-  (`~`) appear starting level 3, the same level that teaches `f`/`F` — the
-  intro card explicitly says "a dash flies clean over gaps," teaching the
-  hazard and its counterplay in the same sentence. One-way tiles (level 8)
-  and hard rock (level 9) follow the same pattern: the intro card names
-  the hazard and its counterplay together.
+  arrive with `f` ("a dash flies clean over gaps"); the linter's cadence is
+  spelled out on level 10's card; the sky's rules on level 12's. The intro
+  card names the hazard and its counterplay in the same sentence.
 
-## Adding an 11th level (or rebalancing)
+## Adding a 14th level (or rebalancing)
 
-If extending the curriculum:
-1. Identify the **one** new thing (motion, hazard, or enemy behavior) it
-   teaches — if you can't name it in one clause, it's not ready.
-2. Reuse existing enemy types/hazards for everything else in that level;
-   only add a new enemy type if you've exhausted reasonable escalations of
-   the existing three (see `docs/bestiary.md` → "Adding a new enemy
-   type").
-3. Hand-author a keystroke solution first (extend
-   `test/solve.test.ts`'s `SOLUTIONS` map) — this is both the correctness
-   proof and the basis for setting `par`.
-4. Set `limit` using the slack-ratio trend (tighter than the previous
-   level, looser than "solution length + 5").
-5. Write the map, then verify with `npx vitest run test/solve.test.ts`.
+1. Identify the **one** new thing it teaches — if you can't name it in one
+   clause, it's not ready.
+2. Reuse existing enemy types/hazards for everything else; see
+   `docs/bestiary.md` before inventing an enemy.
+3. Author the speedrun first, then at least one alternate route with a
+   different personality (safe loot line, or a clever skip). Add them to
+   `LevelDef.solution` and `test/solve.test.ts`'s `ROUTES`.
+4. Set `par` = measured speedrun length; set `limit` per the slack
+   guidance above (generous for new systems, tight for synthesis).
+5. Run `npx vitest run test/solve.test.ts` — it is the proof of all of the
+   above.
