@@ -1,0 +1,209 @@
+# Mechanics
+
+This is the systems reference. Everything here is implemented in
+`engine.js`, which is intentionally pure logic with no DOM — read it
+alongside this doc as the ground truth.
+
+## The core loop
+
+1. Look at the room: enemies, gaps, code-tiles, bushes, the exit.
+2. Plan a route in terms of vim motions, not individual steps.
+3. Execute — every *completed* command (not every keypress) advances the
+   world by one tick.
+4. If you need a bomb, detour to a code-tile, fix its word, drop the bomb,
+   get clear of the blast.
+5. Reach `E` before your keystroke budget runs out, ideally under par.
+
+The loop is identical on level 1 and level 10. What changes is the
+vocabulary of motions available (taught progressively) and how unforgiving
+the budget is relative to that vocabulary. See `docs/level-design.md`.
+
+## The turn system (the load-bearing idea)
+
+The world is **turn-based on completed keystroke commands**, not on
+individual keypresses and not on wall-clock time:
+
+- `l` → one enemy tick, moves you one tile.
+- `12l` → **one** enemy tick, moves you twelve tiles (assuming the path is
+  clear the whole way — see "Slides" below).
+- A bonked motion (walking into a wall) still consumes a tick — spam is
+  punished exactly like a real move (`engine.js` → `bonk()` calls `tick()`).
+
+This is the entire reason vim motions matter mechanically, not just
+thematically: **counted/compound motions are strictly better than
+button-mashing** because they cover more ground per enemy turn. A player
+who taps `l` twelve times gives zombies twelve free moves; a player who
+types `12l` gives them one. The UI even nags about this directly — see
+`ui.js` → `gameKey`'s "try 4l instead of llll" toast after four repeats of
+the same directional key.
+
+Ticks drive:
+- Bomb fuses counting down (`fuse--` in `tick()`).
+- Enemy AI steps (zombie/imp/mage, one decision each per tick).
+- Mage projectile movement.
+- Iframe decay after a rescue.
+- Snapshotting state for `u` (undo).
+
+### Keystroke budget vs. par
+
+Every level has two numbers (`levels.js` → `limit`, `par`):
+- `limit` — hard cap. Hit it and the level ends in **FAIL** ("the cursor
+  grows still"). This is a soft-fail, not a death — no enemy touched you,
+  you just ran out of runway.
+- `par` — the target for full marks. Star rating on clear
+  (`ui.js` → `showClear`): `keys <= par` → 3 stars, `keys <= par*1.5` → 2
+  stars, else → 1 star.
+
+Because `limit` and `par` are both keystroke counts (not real seconds),
+the game never punishes you for *thinking slowly* — only for moving
+inefficiently. This is a deliberate choice: Vimberman is a puzzle you
+solve with your brain and then execute with your hands, not a
+twitch-reflex game. See `docs/level-design.md` for how these numbers are
+tuned per level.
+
+## Motions
+
+| Keys | What it does | Engine entry point |
+|---|---|---|
+| `h j k l` | Step one tile. Walking into a wall/rock/enemy still costs a tick. | `singleStep` |
+| `5l`, `3j`, … | Count + direction: slides up to N tiles, stopping at the first obstruction, as **one** enemy tick. | `slide` |
+| `w` `b` `e` | Word motions: hop to next/previous word start, or word end, among runs of lettered tiles in your row. Flies clean over gaps and even over enemies standing on the flight path (only walls block the flight — see `flightBlocked`). | `wordMotion` |
+| `f{c}` `F{c}` | Dash right/left along the row and land **on** the next occurrence of character `{c}`. | `findMotion` |
+| `t{c}` `T{c}` | Same as `f`/`F` but land **one tile short**. | `findMotion` |
+| `;` / `,` | Repeat the last `f`/`F`/`t`/`T`, `,` reverses direction. | `st.lastFind` |
+| `0` / `$` | Slide to the start/end of the row (`Infinity` max distance). | `slide` |
+| `gg` / `G` | Slide to the top/bottom of the column. | `slide` |
+| `i` | On a code-tile (`T`), opens the terminal editor. Elsewhere, a no-op error. | `normalKey` case `i` |
+| `x` | In the world: drops an armed bomb. In a code-tile: deletes a character. | `dropBomb` / `termKey` |
+| `u` | Rewinds one world tick (see Undo below). Also the death-rescue key. | `worldUndo` / `rescue` |
+
+All motions accept a numeric count prefix (`P.pending.count`), and all of
+them go through the same "did this move actually happen" gate before
+calling `tick()` — a motion that changes nothing (blocked immediately)
+calls `bonk()` instead, which still burns a tick, matching real vim's
+"beep and do nothing" except here the world still moves on without you.
+
+### One-way tiles and gaps
+
+- `~` (gap/pit): impassable to normal steps and slides; only `w`/`b`/`e`/`f`/`t`
+  "flight" motions can cross it, because those motions don't check
+  intermediate tiles for anything except solid walls (`flightBlocked`).
+  This is the mechanical reason word-hop and find-motions feel like
+  "soaring" — they're the only tools that ignore gaps.
+- `<` `>` `^` `V` (one-way tiles, rendered `‹ › ˄ ˅`): can only be *entered*
+  while moving in their allowed direction (`ONEWAY` map + `onewayOk`).
+  Step off in the wrong direction later and you simply can't re-enter —
+  there's no backtracking through a one-way tile. This turns route
+  planning into a real commitment, taught explicitly in level 8
+  ("AGAINST THE CURRENT").
+
+### Terrain that blocks bombs specifically
+
+- `%` (soft rock, rendered `▒`): destroyed by any blast, no radius
+  requirement.
+- `&` (hard rock, rendered `▓`): only destroyed by a blast with radius
+  `>= 3`, i.e. requires at least two `R` (radius) pickups. This is a
+  deliberate late-game gate — see level 9/10 bush placement.
+- `#` (wall): always blocks blast propagation entirely.
+
+## Bombs: the fiction *is* the mechanic
+
+Bombs are not found lying around. The only way to gain one is:
+
+1. Stand on a code-tile (`T`, drawn as a glowing `:`).
+2. Press `i` to enter **terminal mode** (a nested vim-editor mini-game,
+   see below).
+3. Edit the broken word shown in `t.buffer` until it equals `t.target`
+   (almost always the literal string `"bomb"`).
+4. On a correct match, `termValidate` auto-commits: the terminal closes,
+   you're granted `t.grants` bombs (1 or 2, capped at 3 held at once), and
+   a satisfying two-note chime plays.
+5. Back in the world, press `x` to drop a bomb: fuse of 6 ticks, blast
+   radius `p.radius` (starts at 2), plus-shaped (`blastTiles`).
+
+Blast propagation stops at walls, destroys soft rock unconditionally,
+destroys hard rock only at radius ≥ 3, opens bushes into their hidden item,
+and **chains into other bombs** it touches (`explode`'s `chainQ`) — so
+bombs can be used to detonate each other, including enemy-planted ones.
+
+### The terminal editor (bomb-crafting minigame)
+
+This is a scoped-down vim inside the vim game — its own mode
+(`st.mode === 'terminal'`), its own pending-key state, and its own subset
+of commands (`termKey` in `engine.js`):
+
+- Movement: `h` `l` `0` `$` (no `j`/`k` — it's a single line buffer).
+- Edits: `x` (delete char), `r{c}` (replace char), `~` (toggle case),
+  `s` (substitute char + enter insert), `i`/`a`/`A` (enter insert at
+  cursor / after cursor / at end).
+- Word ops: `cw` (change to word end), `ciw` (change the whole word under
+  the cursor, from anywhere inside it) — these are the level 6 and
+  level 9 teaching moments respectively.
+- `Escape` from insert commits the current buffer and re-validates.
+- `u` even works *inside* the terminal (falls through to `worldUndo`).
+
+Every keypress inside the terminal still calls `tick()` — **fixing a bomb
+costs keystroke budget and gives enemies free turns**, exactly like moving
+in the world. This is why the game frequently plants an enemy near a
+code-tile (see `docs/bestiary.md`): the terminal doesn't pause the world,
+so bomb-crafting under pressure is itself a challenge, not a rest stop.
+
+## Items and bushes
+
+Bushes (`*`) hide one of four item types, defined per-tile in a level's
+`bushes` map (falls back to `{ type: 'K', amt: 5 }` if unspecified):
+
+| Type | Effect | Notes |
+|---|---|---|
+| `K` | +N keystroke budget (`st.limit += amt`) | The only item that's pure economy, not power. |
+| `R` | +1 permanent blast radius | Needed in pairs to reach radius 3 and crack hard rock `&`. |
+| `U` | +1 undo charge | Extends both your rewind and your death-insurance pool. |
+| `B` | +1 bomb held (capped at 3) | Skips a code-tile detour for one extra bomb. |
+
+Bushes are consumed on entry (`enterTile`), replaced with `.`. An item can
+also be exposed by a bomb blast hitting a bush directly, per `blastTiles`
+— destroying a bush with a bomb still yields its hidden item rather than
+just clearing the tile.
+
+## Undo (`u`) — the double-duty system
+
+`u` does two jobs, and both are the same underlying mechanic (rewind one
+snapshot from `st.history`):
+
+1. **Mid-play rewind**: pressing `u` during normal play pops the most
+   recent world-tick snapshot and restores it, refunding nothing but
+   costing one undo charge (`worldUndo`).
+2. **Death insurance**: on death, if `st.player.undo > 0` and history
+   exists, pressing `u` (handled specially — see `key()`'s `dead` branch
+   and `ui.js`'s `DEAD` screen) calls `rescue()` instead: same restore,
+   but also grants 2 iframe ticks so you don't immediately re-die on the
+   same enemy contact.
+
+Constraints that make undo a resource, not a safety net:
+- History is capped at 80 snapshots (`pushSnap`), effectively unbounded
+  for level lengths seen so far.
+- **History is wiped entirely the instant any bomb explodes**
+  (`st.history = []` in `explode()`). You cannot undo across a detonation
+  — once something has blown up, that's permanent. This is a deliberate
+  boundary: it stops players from using undo to "peek" at safe blast
+  timing risk-free, and it means bomb commitment is always final.
+  Design implication: never rely on undo to survive your *own* blast —
+  plan the exit before you drop the bomb.
+- Undo charges start at 3 and are topped up only by `U` bushes.
+
+## Win / fail / death states
+
+Three distinct end states, all handled as `st.status` transitions:
+
+- **`won`** — stepped onto `E`. Triggers star calculation against `par`
+  and unlocks the next level.
+- **`fail`** — `st.keys >= st.limit` after any keypress. Not lethal
+  fiction-wise; it's simply "you ran out of budget." No undo applies here
+  — the level just ends and offers retry.
+- **`dead`** — an enemy occupies your tile, you walk into one, or a mage
+  bolt/projectile hits you (`hitPlayer`). This is the only state `u` can
+  reverse (via `rescue`), and only if undo charges remain.
+
+`iframes` (invulnerability frames) exist solely to prevent an immediate
+re-death after a rescue — they decay by 1 per tick and are otherwise
+always 0 during normal play.
