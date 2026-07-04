@@ -1,0 +1,115 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">VIMBERMAN banner</title>
+  <desc id="desc">Retro CRT pixel-art banner for Vimberman, a Vim-motion Bomberman-like game.</desc>
+  <defs>
+    <radialGradient id="glow" cx="48%" cy="42%" r="72%">
+      <stop offset="0%" stop-color="#123d27"/>
+      <stop offset="58%" stop-color="#07140d"/>
+      <stop offset="100%" stop-color="#020403"/>
+    </radialGradient>
+    <linearGradient id="titleGrad" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#d9ff7a"/>
+      <stop offset="45%" stop-color="#52ff87"/>
+      <stop offset="100%" stop-color="#00c46f"/>
+    </linearGradient>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="4" height="2" fill="#000" opacity="0.22"/>
+      <rect y="2" width="4" height="2" fill="#9cffb8" opacity="0.035"/>
+    </pattern>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0v48" fill="none" stroke="#39ff88" stroke-opacity="0.07" stroke-width="1"/>
+    </pattern>
+    <style>
+      .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;}
+      .tile{shape-rendering: crispEdges; rx:4; ry:4;}
+      .tiny{font-size:18px; letter-spacing:.08em;}
+      .hud{font-size:20px; fill:#8bffb4; opacity:.9;}
+      .key{font-size:22px; fill:#05140a; font-weight:800;}
+      .glyph{font-size:24px; font-weight:900; text-anchor:middle; dominant-baseline:middle;}
+    </style>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#glow)"/>
+  <rect width="1280" height="640" fill="url(#grid)"/>
+
+  <!-- Pixel dungeon board -->
+  <g transform="translate(96 300)" filter="url(#softGlow)">
+    <rect x="0" y="0" width="720" height="240" fill="#06170d" stroke="#42ff86" stroke-opacity=".42" stroke-width="2"/>
+    <g class="mono">
+      <!-- walls -->
+      <g fill="#173322" stroke="#58ff8c" stroke-opacity=".26">
+        <rect class="tile" x="0" y="0" width="48" height="48"/><rect class="tile" x="48" y="0" width="48" height="48"/><rect class="tile" x="96" y="0" width="48" height="48"/><rect class="tile" x="144" y="0" width="48" height="48"/><rect class="tile" x="192" y="0" width="48" height="48"/><rect class="tile" x="240" y="0" width="48" height="48"/><rect class="tile" x="288" y="0" width="48" height="48"/><rect class="tile" x="336" y="0" width="48" height="48"/><rect class="tile" x="384" y="0" width="48" height="48"/><rect class="tile" x="432" y="0" width="48" height="48"/><rect class="tile" x="480" y="0" width="48" height="48"/><rect class="tile" x="528" y="0" width="48" height="48"/><rect class="tile" x="576" y="0" width="48" height="48"/><rect class="tile" x="624" y="0" width="48" height="48"/><rect class="tile" x="672" y="0" width="48" height="48"/>
+        <rect class="tile" x="0" y="192" width="48" height="48"/><rect class="tile" x="48" y="192" width="48" height="48"/><rect class="tile" x="96" y="192" width="48" height="48"/><rect class="tile" x="144" y="192" width="48" height="48"/><rect class="tile" x="192" y="192" width="48" height="48"/><rect class="tile" x="240" y="192" width="48" height="48"/><rect class="tile" x="288" y="192" width="48" height="48"/><rect class="tile" x="336" y="192" width="48" height="48"/><rect class="tile" x="384" y="192" width="48" height="48"/><rect class="tile" x="432" y="192" width="48" height="48"/><rect class="tile" x="480" y="192" width="48" height="48"/><rect class="tile" x="528" y="192" width="48" height="48"/><rect class="tile" x="576" y="192" width="48" height="48"/><rect class="tile" x="624" y="192" width="48" height="48"/><rect class="tile" x="672" y="192" width="48" height="48"/>
+        <rect class="tile" x="0" y="48" width="48" height="48"/><rect class="tile" x="0" y="96" width="48" height="48"/><rect class="tile" x="0" y="144" width="48" height="48"/><rect class="tile" x="672" y="48" width="48" height="48"/><rect class="tile" x="672" y="96" width="48" height="48"/><rect class="tile" x="672" y="144" width="48" height="48"/>
+        <rect class="tile" x="192" y="48" width="48" height="48"/><rect class="tile" x="384" y="48" width="48" height="48"/><rect class="tile" x="144" y="144" width="48" height="48"/><rect class="tile" x="432" y="144" width="48" height="48"/>
+      </g>
+      <!-- soft rocks -->
+      <g fill="#314a2f" stroke="#eaff9b" stroke-opacity=".25">
+        <rect class="tile" x="240" y="96" width="48" height="48"/><rect class="tile" x="480" y="96" width="48" height="48"/><rect class="tile" x="528" y="144" width="48" height="48"/>
+        <text class="glyph" x="264" y="120" fill="#b7ff63">▒</text><text class="glyph" x="504" y="120" fill="#b7ff63">▒</text><text class="glyph" x="552" y="168" fill="#b7ff63">▒</text>
+      </g>
+      <!-- blast cross -->
+      <g fill="#ffce3a" opacity=".88">
+        <rect class="tile" x="336" y="96" width="48" height="48"/><rect class="tile" x="288" y="96" width="48" height="48"/><rect class="tile" x="384" y="96" width="48" height="48"/><rect class="tile" x="336" y="48" width="48" height="48"/><rect class="tile" x="336" y="144" width="48" height="48"/>
+      </g>
+      <circle cx="360" cy="120" r="16" fill="#1b1b15" stroke="#fff5a6" stroke-width="3"/>
+      <path d="M366 106c15-22 37-17 45-2" fill="none" stroke="#ffef7a" stroke-width="4" stroke-linecap="round"/>
+      <text class="glyph" x="72" y="72" fill="#7dff9f">▉</text>
+      <text class="glyph" x="72" y="72" fill="#031208">P</text>
+      <text class="glyph" x="120" y="72" fill="#e7ff68">?</text>
+      <text class="glyph" x="552" y="72" fill="#ff6565">Z</text>
+      <text class="glyph" x="600" y="120" fill="#ff9352">&amp;</text>
+      <text class="glyph" x="120" y="168" fill="#78ffbf">w</text>
+      <text class="glyph" x="216" y="168" fill="#78ffbf">b</text>
+      <text class="glyph" x="264" y="168" fill="#78ffbf">e</text>
+      <text class="glyph" x="624" y="168" fill="#d8ff58">E</text>
+    </g>
+  </g>
+
+  <!-- Title block -->
+  <g transform="translate(92 80)" filter="url(#softGlow)">
+    <text class="mono" x="0" y="0" fill="#8dffb4" font-size="22" letter-spacing=".22em">BOMBS · ZOMBIES · THE WORLD'S MOST PORTABLE SKILL</text>
+    <text class="mono" x="0" y="112" fill="url(#titleGrad)" font-size="108" font-weight="1000" letter-spacing=".02em">VIMBERMAN</text>
+    <rect x="5" y="134" width="790" height="4" fill="#43ff86" opacity=".78"/>
+    <text class="mono" x="0" y="185" fill="#d7ffe2" font-size="30">Vim motions. Bomb fuses. Keystroke economy.</text>
+    <text class="mono" x="0" y="226" fill="#8bffb4" font-size="22">13 deterministic puzzle-action levels in your browser</text>
+  </g>
+
+  <!-- Vim keycaps -->
+  <g transform="translate(860 92)" class="mono" filter="url(#softGlow)">
+    <text x="0" y="0" class="hud">collect the vocabulary</text>
+    <g transform="translate(0 28)">
+      <rect class="tile" x="0" y="0" width="70" height="44" fill="#9cff6b"/><text class="key" x="22" y="29">h</text>
+      <rect class="tile" x="78" y="0" width="70" height="44" fill="#9cff6b"/><text class="key" x="101" y="29">j</text>
+      <rect class="tile" x="156" y="0" width="70" height="44" fill="#9cff6b"/><text class="key" x="179" y="29">k</text>
+      <rect class="tile" x="234" y="0" width="70" height="44" fill="#9cff6b"/><text class="key" x="258" y="29">l</text>
+      <rect class="tile" x="0" y="56" width="70" height="44" fill="#61fbb1"/><text class="key" x="23" y="85">w</text>
+      <rect class="tile" x="78" y="56" width="70" height="44" fill="#61fbb1"/><text class="key" x="101" y="85">b</text>
+      <rect class="tile" x="156" y="56" width="70" height="44" fill="#61fbb1"/><text class="key" x="180" y="85">e</text>
+      <rect class="tile" x="234" y="56" width="70" height="44" fill="#ffe15a"/><text class="key" x="255" y="85">f</text>
+      <rect class="tile" x="0" y="112" width="70" height="44" fill="#ffe15a"/><text class="key" x="23" y="141">0</text>
+      <rect class="tile" x="78" y="112" width="70" height="44" fill="#ffe15a"/><text class="key" x="100" y="141">$</text>
+      <rect class="tile" x="156" y="112" width="148" height="44" fill="#ffb456"/><text class="key" x="198" y="141">ciw</text>
+      <rect class="tile" x="0" y="168" width="148" height="44" fill="#80d8ff"/><text class="key" x="35" y="197">C-u</text>
+      <rect class="tile" x="156" y="168" width="148" height="44" fill="#80d8ff"/><text class="key" x="191" y="197">C-d</text>
+    </g>
+  </g>
+
+  <!-- HUD footer -->
+  <g class="mono" transform="translate(95 584)">
+    <text class="hud" x="0" y="0">-- NORMAL --</text>
+    <text class="hud" x="190" y="0">keys 021/060</text>
+    <text class="hud" x="390" y="0">bombs:2 radius:3 undo:1</text>
+    <text class="hud" x="820" y="0">:help · :map · :hint · :q!</text>
+  </g>
+
+  <rect width="1280" height="640" fill="url(#scan)"/>
+  <rect x="14" y="14" width="1252" height="612" rx="28" fill="none" stroke="#8affad" stroke-opacity=".28" stroke-width="3"/>
+</svg>
