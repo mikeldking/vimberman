@@ -1,115 +1,154 @@
 <svg width="1280" height="640" viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">VIMBERMAN banner</title>
-  <desc id="desc">Retro CRT pixel-art banner for Vimberman, a Vim-motion Bomberman-like game.</desc>
+  <desc id="desc">Extremely fun, readable arcade banner for Vimberman, a Vim-motion Bomberman-like game built by Hermes Agent and Fable 5.</desc>
   <defs>
-    <radialGradient id="glow" cx="48%" cy="42%" r="72%">
-      <stop offset="0%" stop-color="#123d27"/>
-      <stop offset="58%" stop-color="#07140d"/>
-      <stop offset="100%" stop-color="#020403"/>
-    </radialGradient>
-    <linearGradient id="titleGrad" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0%" stop-color="#d9ff7a"/>
-      <stop offset="45%" stop-color="#52ff87"/>
-      <stop offset="100%" stop-color="#00c46f"/>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#210048"/>
+      <stop offset="38%" stop-color="#061a5f"/>
+      <stop offset="72%" stop-color="#053b2b"/>
+      <stop offset="100%" stop-color="#111200"/>
     </linearGradient>
-    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="4" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
+    <radialGradient id="pop" cx="50%" cy="42%" r="72%">
+      <stop offset="0%" stop-color="#7bff9b" stop-opacity="0.48"/>
+      <stop offset="42%" stop-color="#2df5ff" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="titleFill" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#fff56a"/>
+      <stop offset="24%" stop-color="#6dff79"/>
+      <stop offset="50%" stop-color="#4df9ff"/>
+      <stop offset="74%" stop-color="#ff78f6"/>
+      <stop offset="100%" stop-color="#ffcf3f"/>
+    </linearGradient>
+    <linearGradient id="floor" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#172d40"/>
+      <stop offset="100%" stop-color="#0d1b14"/>
+    </linearGradient>
+    <pattern id="scan" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="3" fill="#000" opacity="0.13"/>
+      <rect y="3" width="6" height="3" fill="#fff" opacity="0.025"/>
+    </pattern>
+    <pattern id="dots" width="36" height="36" patternUnits="userSpaceOnUse">
+      <circle cx="4" cy="4" r="2" fill="#ffffff" opacity="0.12"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-35%" width="140%" height="170%">
+      <feDropShadow dx="0" dy="10" stdDeviation="0" flood-color="#001014" flood-opacity="0.95"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#7dff9b" flood-opacity="0.65"/>
     </filter>
-    <pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse">
-      <rect width="4" height="2" fill="#000" opacity="0.22"/>
-      <rect y="2" width="4" height="2" fill="#9cffb8" opacity="0.035"/>
-    </pattern>
-    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
-      <path d="M48 0H0v48" fill="none" stroke="#39ff88" stroke-opacity="0.07" stroke-width="1"/>
-    </pattern>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
     <style>
       .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;}
-      .tile{shape-rendering: crispEdges; rx:4; ry:4;}
-      .tiny{font-size:18px; letter-spacing:.08em;}
-      .hud{font-size:20px; fill:#8bffb4; opacity:.9;}
-      .key{font-size:22px; fill:#05140a; font-weight:800;}
-      .glyph{font-size:24px; font-weight:900; text-anchor:middle; dominant-baseline:middle;}
+      .fat{font-family: Impact, Haettenschweiler, 'Arial Black', ui-sans-serif, sans-serif; font-weight:900; letter-spacing:.035em;}
+      .tiny{font-size:18px; font-weight:800;}
+      .label{font-size:24px; font-weight:900; fill:#071018;}
+      .tile{shape-rendering:crispEdges; rx:10; ry:10;}
+      .glyph{font-size:34px; font-weight:1000; text-anchor:middle; dominant-baseline:central;}
     </style>
   </defs>
 
-  <rect width="1280" height="640" fill="url(#glow)"/>
-  <rect width="1280" height="640" fill="url(#grid)"/>
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <rect width="1280" height="640" fill="url(#pop)"/>
+  <rect width="1280" height="640" fill="url(#dots)"/>
 
-  <!-- Pixel dungeon board -->
-  <g transform="translate(96 300)" filter="url(#softGlow)">
-    <rect x="0" y="0" width="720" height="240" fill="#06170d" stroke="#42ff86" stroke-opacity=".42" stroke-width="2"/>
-    <g class="mono">
-      <!-- walls -->
-      <g fill="#173322" stroke="#58ff8c" stroke-opacity=".26">
-        <rect class="tile" x="0" y="0" width="48" height="48"/><rect class="tile" x="48" y="0" width="48" height="48"/><rect class="tile" x="96" y="0" width="48" height="48"/><rect class="tile" x="144" y="0" width="48" height="48"/><rect class="tile" x="192" y="0" width="48" height="48"/><rect class="tile" x="240" y="0" width="48" height="48"/><rect class="tile" x="288" y="0" width="48" height="48"/><rect class="tile" x="336" y="0" width="48" height="48"/><rect class="tile" x="384" y="0" width="48" height="48"/><rect class="tile" x="432" y="0" width="48" height="48"/><rect class="tile" x="480" y="0" width="48" height="48"/><rect class="tile" x="528" y="0" width="48" height="48"/><rect class="tile" x="576" y="0" width="48" height="48"/><rect class="tile" x="624" y="0" width="48" height="48"/><rect class="tile" x="672" y="0" width="48" height="48"/>
-        <rect class="tile" x="0" y="192" width="48" height="48"/><rect class="tile" x="48" y="192" width="48" height="48"/><rect class="tile" x="96" y="192" width="48" height="48"/><rect class="tile" x="144" y="192" width="48" height="48"/><rect class="tile" x="192" y="192" width="48" height="48"/><rect class="tile" x="240" y="192" width="48" height="48"/><rect class="tile" x="288" y="192" width="48" height="48"/><rect class="tile" x="336" y="192" width="48" height="48"/><rect class="tile" x="384" y="192" width="48" height="48"/><rect class="tile" x="432" y="192" width="48" height="48"/><rect class="tile" x="480" y="192" width="48" height="48"/><rect class="tile" x="528" y="192" width="48" height="48"/><rect class="tile" x="576" y="192" width="48" height="48"/><rect class="tile" x="624" y="192" width="48" height="48"/><rect class="tile" x="672" y="192" width="48" height="48"/>
-        <rect class="tile" x="0" y="48" width="48" height="48"/><rect class="tile" x="0" y="96" width="48" height="48"/><rect class="tile" x="0" y="144" width="48" height="48"/><rect class="tile" x="672" y="48" width="48" height="48"/><rect class="tile" x="672" y="96" width="48" height="48"/><rect class="tile" x="672" y="144" width="48" height="48"/>
-        <rect class="tile" x="192" y="48" width="48" height="48"/><rect class="tile" x="384" y="48" width="48" height="48"/><rect class="tile" x="144" y="144" width="48" height="48"/><rect class="tile" x="432" y="144" width="48" height="48"/>
-      </g>
-      <!-- soft rocks -->
-      <g fill="#314a2f" stroke="#eaff9b" stroke-opacity=".25">
-        <rect class="tile" x="240" y="96" width="48" height="48"/><rect class="tile" x="480" y="96" width="48" height="48"/><rect class="tile" x="528" y="144" width="48" height="48"/>
-        <text class="glyph" x="264" y="120" fill="#b7ff63">▒</text><text class="glyph" x="504" y="120" fill="#b7ff63">▒</text><text class="glyph" x="552" y="168" fill="#b7ff63">▒</text>
-      </g>
-      <!-- blast cross -->
-      <g fill="#ffce3a" opacity=".88">
-        <rect class="tile" x="336" y="96" width="48" height="48"/><rect class="tile" x="288" y="96" width="48" height="48"/><rect class="tile" x="384" y="96" width="48" height="48"/><rect class="tile" x="336" y="48" width="48" height="48"/><rect class="tile" x="336" y="144" width="48" height="48"/>
-      </g>
-      <circle cx="360" cy="120" r="16" fill="#1b1b15" stroke="#fff5a6" stroke-width="3"/>
-      <path d="M366 106c15-22 37-17 45-2" fill="none" stroke="#ffef7a" stroke-width="4" stroke-linecap="round"/>
-      <text class="glyph" x="72" y="72" fill="#7dff9f">▉</text>
-      <text class="glyph" x="72" y="72" fill="#031208">P</text>
-      <text class="glyph" x="120" y="72" fill="#e7ff68">?</text>
-      <text class="glyph" x="552" y="72" fill="#ff6565">Z</text>
-      <text class="glyph" x="600" y="120" fill="#ff9352">&amp;</text>
-      <text class="glyph" x="120" y="168" fill="#78ffbf">w</text>
-      <text class="glyph" x="216" y="168" fill="#78ffbf">b</text>
-      <text class="glyph" x="264" y="168" fill="#78ffbf">e</text>
-      <text class="glyph" x="624" y="168" fill="#d8ff58">E</text>
+  <!-- confetti + motion trails -->
+  <g opacity="0.95" filter="url(#glow)">
+    <path d="M60 116 C206 34 269 169 396 88" fill="none" stroke="#4df9ff" stroke-width="8" stroke-linecap="round" stroke-dasharray="18 22"/>
+    <path d="M882 98 C1018 12 1091 156 1225 64" fill="none" stroke="#ff78f6" stroke-width="8" stroke-linecap="round" stroke-dasharray="18 22"/>
+    <path d="M38 470 C220 360 351 560 548 428" fill="none" stroke="#fff56a" stroke-width="7" stroke-linecap="round" stroke-dasharray="12 20"/>
+    <path d="M784 462 C922 338 1050 562 1232 412" fill="none" stroke="#6dff79" stroke-width="7" stroke-linecap="round" stroke-dasharray="12 20"/>
+    <g class="mono" font-size="34" font-weight="900">
+      <text x="90" y="76" fill="#fff56a">hjkl</text><text x="1056" y="92" fill="#6dff79">12l!</text>
+      <text x="102" y="540" fill="#ff78f6">ciw</text><text x="1082" y="532" fill="#4df9ff">:wq</text>
+      <text x="628" y="70" fill="#ffffff" opacity=".82">✦</text><text x="724" y="88" fill="#ffcf3f">★</text>
+      <text x="1182" y="238" fill="#ffffff" opacity=".9">✹</text><text x="72" y="250" fill="#ffffff" opacity=".9">✹</text>
     </g>
   </g>
 
-  <!-- Title block -->
-  <g transform="translate(92 80)" filter="url(#softGlow)">
-    <text class="mono" x="0" y="0" fill="#8dffb4" font-size="22" letter-spacing=".22em">BOMBS · ZOMBIES · THE WORLD'S MOST PORTABLE SKILL</text>
-    <text class="mono" x="0" y="112" fill="url(#titleGrad)" font-size="108" font-weight="1000" letter-spacing=".02em">VIMBERMAN</text>
-    <rect x="5" y="134" width="790" height="4" fill="#43ff86" opacity=".78"/>
-    <text class="mono" x="0" y="185" fill="#d7ffe2" font-size="30">Vim motions. Bomb fuses. Keystroke economy.</text>
-    <text class="mono" x="0" y="226" fill="#8bffb4" font-size="22">13 deterministic puzzle-action levels in your browser</text>
+  <!-- big readable arcade title -->
+  <g transform="translate(640 142)" text-anchor="middle" filter="url(#shadow)">
+    <text class="fat" x="0" y="0" font-size="142" fill="#140021" stroke="#ffffff" stroke-width="24" paint-order="stroke fill">VIMBERMAN</text>
+    <text class="fat" x="0" y="0" font-size="142" fill="url(#titleFill)" stroke="#15111f" stroke-width="8" paint-order="stroke fill">VIMBERMAN</text>
   </g>
 
-  <!-- Vim keycaps -->
-  <g transform="translate(860 92)" class="mono" filter="url(#softGlow)">
-    <text x="0" y="0" class="hud">collect the vocabulary</text>
-    <g transform="translate(0 28)">
-      <rect class="tile" x="0" y="0" width="70" height="44" fill="#9cff6b"/><text class="key" x="22" y="29">h</text>
-      <rect class="tile" x="78" y="0" width="70" height="44" fill="#9cff6b"/><text class="key" x="101" y="29">j</text>
-      <rect class="tile" x="156" y="0" width="70" height="44" fill="#9cff6b"/><text class="key" x="179" y="29">k</text>
-      <rect class="tile" x="234" y="0" width="70" height="44" fill="#9cff6b"/><text class="key" x="258" y="29">l</text>
-      <rect class="tile" x="0" y="56" width="70" height="44" fill="#61fbb1"/><text class="key" x="23" y="85">w</text>
-      <rect class="tile" x="78" y="56" width="70" height="44" fill="#61fbb1"/><text class="key" x="101" y="85">b</text>
-      <rect class="tile" x="156" y="56" width="70" height="44" fill="#61fbb1"/><text class="key" x="180" y="85">e</text>
-      <rect class="tile" x="234" y="56" width="70" height="44" fill="#ffe15a"/><text class="key" x="255" y="85">f</text>
-      <rect class="tile" x="0" y="112" width="70" height="44" fill="#ffe15a"/><text class="key" x="23" y="141">0</text>
-      <rect class="tile" x="78" y="112" width="70" height="44" fill="#ffe15a"/><text class="key" x="100" y="141">$</text>
-      <rect class="tile" x="156" y="112" width="148" height="44" fill="#ffb456"/><text class="key" x="198" y="141">ciw</text>
-      <rect class="tile" x="0" y="168" width="148" height="44" fill="#80d8ff"/><text class="key" x="35" y="197">C-u</text>
-      <rect class="tile" x="156" y="168" width="148" height="44" fill="#80d8ff"/><text class="key" x="191" y="197">C-d</text>
+  <g transform="translate(640 215)" text-anchor="middle" class="mono" filter="url(#glow)">
+    <rect x="-454" y="-34" width="908" height="60" rx="30" fill="#071018" stroke="#ffffff" stroke-width="4" opacity="0.94"/>
+    <text x="0" y="7" font-size="30" font-weight="1000" fill="#ffffff">VIM MOTIONS · BOMB FUSES · KEYSTROKE ECONOMY</text>
+  </g>
+
+  <!-- play field strip -->
+  <g transform="translate(105 275)">
+    <rect x="0" y="0" width="1070" height="244" rx="28" fill="url(#floor)" stroke="#ffffff" stroke-width="6"/>
+    <rect x="18" y="18" width="1034" height="208" rx="18" fill="#061111" stroke="#42ff91" stroke-width="3" opacity=".95"/>
+
+    <!-- maze blocks -->
+    <g transform="translate(38 39)">
+      <g fill="#315472" stroke="#9ee9ff" stroke-width="2">
+        <rect class="tile" x="0" y="0" width="52" height="52"/><rect class="tile" x="52" y="0" width="52" height="52"/><rect class="tile" x="104" y="0" width="52" height="52"/><rect class="tile" x="156" y="0" width="52" height="52"/>
+        <rect class="tile" x="0" y="52" width="52" height="52"/><rect class="tile" x="156" y="52" width="52" height="52"/><rect class="tile" x="364" y="52" width="52" height="52"/><rect class="tile" x="572" y="52" width="52" height="52"/>
+        <rect class="tile" x="0" y="104" width="52" height="52"/><rect class="tile" x="52" y="104" width="52" height="52"/><rect class="tile" x="104" y="104" width="52" height="52"/><rect class="tile" x="156" y="104" width="52" height="52"/>
+        <rect class="tile" x="780" y="0" width="52" height="52"/><rect class="tile" x="832" y="0" width="52" height="52"/><rect class="tile" x="884" y="0" width="52" height="52"/><rect class="tile" x="936" y="0" width="52" height="52"/>
+        <rect class="tile" x="936" y="52" width="52" height="52"/><rect class="tile" x="780" y="104" width="52" height="52"/><rect class="tile" x="832" y="104" width="52" height="52"/><rect class="tile" x="884" y="104" width="52" height="52"/><rect class="tile" x="936" y="104" width="52" height="52"/>
+      </g>
+      <g class="mono">
+        <!-- player keycap -->
+        <rect class="tile" x="236" y="52" width="52" height="52" fill="#7dff7a" stroke="#fff" stroke-width="4"/>
+        <text class="glyph" x="262" y="78" fill="#071018">P</text>
+        <rect class="tile" x="300" y="52" width="58" height="52" fill="#fff56a" stroke="#2a1600" stroke-width="4"/>
+        <text class="glyph" x="329" y="78" fill="#071018">?</text>
+
+        <!-- word path -->
+        <text class="glyph" x="452" y="78" fill="#86ffea">w</text>
+        <text class="glyph" x="504" y="78" fill="#86ffea">b</text>
+        <text class="glyph" x="556" y="78" fill="#86ffea">e</text>
+
+        <!-- blast -->
+        <g opacity=".98">
+          <rect class="tile" x="624" y="52" width="52" height="52" fill="#fff56a"/><rect class="tile" x="676" y="52" width="52" height="52" fill="#ffb13f"/><rect class="tile" x="728" y="52" width="52" height="52" fill="#fff56a"/>
+          <rect class="tile" x="676" y="0" width="52" height="52" fill="#ff6b3f"/><rect class="tile" x="676" y="104" width="52" height="52" fill="#ff6b3f"/>
+          <circle cx="702" cy="78" r="19" fill="#101018" stroke="#ffffff" stroke-width="5"/>
+          <path d="M714 58 C737 24 770 44 780 16" fill="none" stroke="#fff56a" stroke-width="6" stroke-linecap="round"/>
+        </g>
+
+        <!-- enemies -->
+        <rect class="tile" x="374" y="0" width="52" height="52" fill="#ff5f6d" stroke="#fff" stroke-width="4"/>
+        <text class="glyph" x="400" y="26" fill="#240006">Z</text>
+        <rect class="tile" x="580" y="104" width="52" height="52" fill="#b47cff" stroke="#fff" stroke-width="4"/>
+        <text class="glyph" x="606" y="130" fill="#1a0628">Q</text>
+        <rect class="tile" x="820" y="52" width="52" height="52" fill="#ff9a4d" stroke="#fff" stroke-width="4"/>
+        <text class="glyph" x="846" y="78" fill="#221000">&amp;</text>
+        <rect class="tile" x="888" y="52" width="52" height="52" fill="#ff78f6" stroke="#fff" stroke-width="4"/>
+        <text class="glyph" x="914" y="78" fill="#23001f">M</text>
+      </g>
     </g>
   </g>
 
-  <!-- HUD footer -->
-  <g class="mono" transform="translate(95 584)">
-    <text class="hud" x="0" y="0">-- NORMAL --</text>
-    <text class="hud" x="190" y="0">keys 021/060</text>
-    <text class="hud" x="390" y="0">bombs:2 radius:3 undo:1</text>
-    <text class="hud" x="820" y="0">:help · :map · :hint · :q!</text>
+  <!-- speech bubbles -->
+  <g class="mono" font-weight="1000">
+    <g transform="translate(78 330) rotate(-7)">
+      <rect x="0" y="0" width="226" height="82" rx="22" fill="#ffffff" stroke="#15111f" stroke-width="6"/>
+      <path d="M154 76 L188 116 L118 82" fill="#ffffff" stroke="#15111f" stroke-width="6"/>
+      <text x="22" y="34" font-size="24" fill="#15111f">ARROWS?</text>
+      <text x="22" y="64" font-size="24" fill="#15111f">NEVER MET 'EM.</text>
+    </g>
+    <g transform="translate(888 330) rotate(6)">
+      <rect x="0" y="0" width="298" height="82" rx="22" fill="#fff56a" stroke="#15111f" stroke-width="6"/>
+      <path d="M78 74 L42 116 L128 82" fill="#fff56a" stroke="#15111f" stroke-width="6"/>
+      <text x="24" y="34" font-size="24" fill="#15111f">TYPE 12l</text>
+      <text x="24" y="64" font-size="24" fill="#15111f">NOT llllllllllll</text>
+    </g>
+  </g>
+
+  <!-- footer strip -->
+  <g transform="translate(102 548)" class="mono" filter="url(#glow)">
+    <rect x="0" y="0" width="1076" height="58" rx="29" fill="#ffffff" opacity=".96"/>
+    <text x="34" y="38" font-size="24" font-weight="1000" fill="#071018">13 LEVELS</text>
+    <text x="190" y="38" font-size="23" font-weight="1000" fill="#071018">BUILT ENTIRELY BY HERMES AGENT + FABLE 5</text>
+    <text x="720" y="38" font-size="21" font-weight="1000" fill="#071018">PRS WELCOME: UNIMAGINABLY MORE FUN</text>
   </g>
 
   <rect width="1280" height="640" fill="url(#scan)"/>
-  <rect x="14" y="14" width="1252" height="612" rx="28" fill="none" stroke="#8affad" stroke-opacity=".28" stroke-width="3"/>
+  <rect x="14" y="14" width="1252" height="612" rx="32" fill="none" stroke="#ffffff" stroke-opacity=".55" stroke-width="4"/>
 </svg>

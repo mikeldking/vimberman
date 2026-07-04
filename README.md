@@ -37,6 +37,10 @@ the zombies twelve turns. `12l` gives them one. Vim's editing philosophy — mov
 farther, with fewer keys — becomes the difference between a clean escape and a
 very educational explosion.
 
+Built entirely with **Hermes Agent** and **Fable 5**. PRs are extremely welcome:
+bring weird levels, meaner enemies, better juice, sillier jokes, and anything
+that makes the game **unimaginably more fun**.
+
 > Bombs · zombies · and the world's most portable skill.
 
 ## Play
@@ -184,6 +188,12 @@ The Pages URL is the canonical playable build:
 <https://mikeldking.github.io/vimberman/>
 
 ## Contributing notes
+
+Vimberman was built entirely with **Hermes Agent** and **Fable 5**, and the door
+is wide open for more chaos. PRs are welcome — especially PRs that make the game
+**unimaginably more fun**: new levels, absurd enemies, sharper tutorials,
+better juice, tastier sound, funnier terminal copy, smarter tests, or wild ideas
+that somehow still fit the Vim/Bomberman premise.
 
 Vimberman works best when every addition preserves the core contract:
 
