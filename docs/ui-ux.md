@@ -2,13 +2,13 @@
 
 How the game presents itself: screen flow, HUD, audio, and the feedback
 loops that make the turn-based engine feel responsive. All of this is
-implemented in `ui.js` and `index.html`; the engine (`engine.js`) has no
+implemented in `src/ui`, `src/render`, and `index.html`; the engine (`src/engine/engine.ts`) has no
 opinion about any of it beyond calling the `fx` hooks described in
 `docs/architecture.md`.
 
 ## Screen state machine
 
-`ui.js` keeps a single `screen` variable driving one big `switch` in the
+`src/ui/screens.ts` keeps a single `screen` variable (in `src/ui/state.ts`) driving one big `switch` in the
 global `keydown` handler. States:
 
 ```
@@ -32,7 +32,7 @@ TITLE → HELP / SETTINGS → back to TITLE
   box refresh, slide sound).
 - **PAUSE** — reachable via bare `Escape` in normal mode with nothing
   pending (a *free* action — doesn't cost a keystroke, see
-  `engine.js`'s `key()` early-return for `Escape` with empty `pending`).
+  `src/engine/engine.ts`'s `key()` early-return for `Escape` with empty `pending`).
 - **DEAD / FAIL / CLEAR** — end-of-attempt cards, each offering the
   appropriate next action (`u` rescue, `r` retry, `Enter` continue, `Esc`
   back to select).
@@ -42,7 +42,7 @@ TITLE → HELP / SETTINGS → back to TITLE
 This is a small detail worth calling out because it's a strong identity
 signal: **every menu in the game — title, level select, settings, pause —
 is navigated with `j`/`k` (and `gg`/`G` to jump to ends), not arrow keys or
-a mouse** (`menuNav` in `ui.js`). The title screen's footer literally says
+a mouse** (`menuNav` in `src/ui/screens.ts`). The title screen's footer literally says
 so: "j/k move · Enter select — yes, the menus are vim too." This isn't
 just flavor — it means the player is drilling the core input language
 from the very first screen they see, before gameplay even starts.
@@ -55,7 +55,7 @@ every screen that matters (`window.addEventListener('keydown', ...)`):
 GAME) a toast fires: "h j k l — arrows are for tourists," paired with an
 error tone. This is a **firm, funny, non-negotiable stance**: the game
 will not quietly accept a "normal" control scheme as a crutch. The
-`ui-smoke.mjs` test enforces this as a real contract (arrow key press
+`ui-smoke.test.ts` test enforces this as a real contract (arrow key press
 must be free — zero keystroke cost, zero movement), not just a joke —
 see `docs/architecture.md` → Testing.
 

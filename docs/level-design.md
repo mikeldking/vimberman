@@ -2,10 +2,10 @@
 
 Vimberman has exactly ten levels, and they are not just ten maps — they're
 a vim curriculum with a Bomberman skin. Every level introduces **exactly
-one** new motion or concept (`levels.js` → `teaches`), stated once on the
+one** new motion or concept (`src/levels.ts` → `teaches`), stated once on the
 intro card (`intro: [...]`), and that level's layout is built to require
 that specific technique rather than merely permit it. Content lives
-entirely in `levels.js`; this doc explains the pedagogy and tuning behind
+entirely in `src/levels.ts`; this doc explains the pedagogy and tuning behind
 it.
 
 ## The curriculum, level by level
@@ -87,7 +87,7 @@ the mechanical enforcement of pillar #3 in `docs/premise.md`
 ("efficiency is the score").
 
 When adding or rebalancing a level, don't pick `par`/`limit` from feel
-alone — `test/solve.mjs` encodes a scripted, hand-authored keystroke
+alone — `test/solve.test.ts` encodes a scripted, hand-authored keystroke
 solution for every level and asserts it wins within `limit`
 (see `docs/architecture.md` → Testing). Treat that solution as the
 reference "intended efficient playthrough," and set `par` close to its
@@ -129,8 +129,8 @@ If extending the curriculum:
    the existing three (see `docs/bestiary.md` → "Adding a new enemy
    type").
 3. Hand-author a keystroke solution first (extend
-   `test/solve.mjs`'s `SOLUTIONS` map) — this is both the correctness
+   `test/solve.test.ts`'s `SOLUTIONS` map) — this is both the correctness
    proof and the basis for setting `par`.
 4. Set `limit` using the slack-ratio trend (tighter than the previous
    level, looser than "solution length + 5").
-5. Write the map, then verify with `node test/solve.mjs <n> --trace`.
+5. Write the map, then verify with `npx vitest run test/solve.test.ts`.

@@ -6,18 +6,19 @@ keystroke budgets, and enemies that move only when you type.
 
 ## Play
 
-Open `index.html` in any modern browser. No build, no dependencies, works offline.
-
 ```sh
-open index.html        # macOS
-# or: npx serve .
+npm install
+npm run dev        # Vite dev server with HMR
+npm run build      # production build into dist/
+npm run preview    # serve the production build
 ```
 
 ### GitHub Pages
 
-The repo deploys itself: `.github/workflows/pages.yml` runs the level-solver
-and UI tests on every push to `main`, then publishes the repo root to Pages.
-One-time setup: repo **Settings → Pages → Source → GitHub Actions**.
+The repo deploys itself: `.github/workflows/pages.yml` typechecks, runs the
+level-solver + engine + UI tests on every push to `main`, then builds and
+publishes `dist/` to Pages. One-time setup: repo
+**Settings → Pages → Source → GitHub Actions**.
 
 ## How it plays
 
@@ -48,10 +49,12 @@ One-time setup: repo **Settings → Pages → Source → GitHub Actions**.
 
 ### The world
 
-`▒` rocks bomb open · `▓` hard rock needs a widened blast · black gaps can only
-be jumped by `w`/`f` motions · `‹ › ˄ ˅` one-way tiles only admit you moving
-that direction · `♣` bushes hide items (keystrokes, bomb radius, undo charges,
-extra bombs) · `E` is the exit.
+Boulders bomb open · steel blocks need a widened blast · starfield gaps can
+only be jumped by `w`/`f` motions · chevron one-way tiles only admit you moving
+that direction · bushes hide items (keystrokes, bomb radius, undo charges,
+extra bombs) · the glowing portal is the exit. Everything is rendered from a
+procedural 16×16 pixel-art sprite atlas — zombies shamble, bombs spark, the
+mage telegraphs its teleport with a rune circle.
 
 ### The bestiary
 
@@ -65,12 +68,17 @@ Some enemies patrol fixed lanes; the free-roamers hunt.
 
 ## Architecture
 
-| File | Role |
+TypeScript throughout (strict mode), bundled by Vite. The engine stays pure —
+no DOM — and notifies the UI through overridable `fx` hooks.
+
+| Path | Role |
 |---|---|
-| `levels.js` | 10 levels as ASCII maps + terminals, bushes, budgets |
-| `engine.js` | pure game logic — motions, terminals, bombs, AI, undo. No DOM. |
-| `ui.js` | canvas renderer, vim statusline HUD, menus, WebAudio synth, saves |
-| `index.html` | shell + CRT styling |
+| `src/levels.ts` | 10 levels as ASCII maps + terminals, bushes, budgets |
+| `src/engine/` | pure game logic — motions, terminals, bombs, AI, undo. No DOM. |
+| `src/render/sprites.ts` | procedural pixel-art atlas: 16×16 sprites as validated character grids |
+| `src/render/renderer.ts` | canvas draw loop: sprite animation, tweening, particles, shake, glow |
+| `src/ui/` | screens/menus, HUD + statusline, WebAudio synth, saves, code-tile editor |
+| `src/main.ts` | boot — wires fx hooks to sound and view effects |
 
 Enemies use a seeded RNG, so every level plays identically on every retry —
 plan like a puzzle, execute like a speedrun.
@@ -78,11 +86,14 @@ plan like a puzzle, execute like a speedrun.
 ## Tests
 
 ```sh
-node test/solve.mjs        # plays all 10 levels with scripted vim keystrokes
-node test/solve.mjs 7 --trace
-node test/ui-smoke.mjs     # boots the real UI headlessly and beats level 1
+npm test               # vitest: solvability + engine rules + UI smoke + sprite atlas
+npx tsc --noEmit       # strict typecheck
 ```
 
-`solve.mjs` proves every level is completable within its keystroke budget using
-only the commands taught so far. Progress saves to `localStorage`
-(`vimberman.save.v1`).
+`test/solve.test.ts` replays a hand-authored keystroke script per level through
+the real engine and proves every level is completable within its keystroke
+budget using only the commands taught so far. `test/engine.test.ts` pins the
+core rules (bonk costs, blast shapes, hard-rock thresholds, undo limits).
+`test/ui-smoke.test.ts` boots the full app against a stub DOM and beats level 1
+through the real keydown handler. `test/sprites.test.ts` validates every pixel
+grid in the atlas. Progress saves to `localStorage` (`vimberman.save.v1`).

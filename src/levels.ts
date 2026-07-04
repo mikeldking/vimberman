@@ -1,9 +1,10 @@
 // Vimberman — level data
-// Legend: # wall  % rock  & hard rock  . floor  ~ gap  <>^v one-way (arrow = only
+// Legend: # wall  % rock  & hard rock  . floor  ~ gap  <>^V one-way (arrow = only
 // direction of travel allowed when entering)  a-z lettered tiles  * bush  E exit
 // P player  Z zombie  I imp  M mage  T code-tile (terminal)
+import type { LevelDef } from './engine/types';
 
-const LEVELS = [
+export const LEVELS: LevelDef[] = [
   {
     name: 'BABY STEPS',
     teaches: 'h j k l',
@@ -271,5 +272,3 @@ const LEVELS = [
     par: 115, limit: 175,
   },
 ];
-
-if (typeof module !== 'undefined') module.exports = { LEVELS };

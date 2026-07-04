@@ -2,8 +2,8 @@
 
 Three enemy types, each teaching a different lesson about the turn system
 and each introduced to the player before it's used against them at full
-difficulty. All enemy logic lives in `engine.js` (`zombieTick`, `impTick`,
-`mageTick`); rendering is in `ui.js` (`COLORS`, the `enemies` draw pass).
+difficulty. All enemy logic lives in `src/engine/engine.ts` (`zombieTick`, `impTick`,
+`mageTick`); rendering is in `src/render/renderer.ts` (the `enemies` draw pass over the pixel-art atlas).
 
 Enemies share one structural choice: patrol-leashed enemies (`e.leash ===
 'row'|'col'`, set per-instance via a level's `enemyOpts`) never chase —
@@ -72,7 +72,7 @@ ticks (`mageTick`):
    level for a valid teleport spot: floor or letter tile, Manhattan
    distance 3–6 from the player, **not on the player's current row or
    column**, and unoccupied. It picks one at random and immediately
-   starts telegraphing it (`fx.telegraph`, a pulsing `◌` glyph in `ui.js`)
+   starts telegraphing it (`fx.telegraph`, an animated rune-circle sprite drawn by `src/render/renderer.ts`)
    one tick *before* it actually appears there.
 3. **`port`** — it warps to the telegraphed tile (becoming `immune` to
    bomb blasts for this one tick — see below), then fires a bolt along

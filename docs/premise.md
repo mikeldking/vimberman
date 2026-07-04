@@ -35,12 +35,12 @@ sentence — everything else in the design is downstream of it.
   player like a slightly smug senior engineer who is nonetheless rooting
   for you.
 - **No hand-holding beyond the intro card.** Each level's intro screen
-  states the one new trick and gets out of the way (`levels.js` →
+  states the one new trick and gets out of the way (`src/levels.ts` →
   `intro: [...]`). The game trusts that showing the mechanic once, in
   context, teaches better than an explainer wall.
 - **A real statusline.** The bottom bar mimics vim's actual statusline
   (mode indicator, echo area, last command, pending keys, cursor
-  position) — see `ui.js` → `updateHud`. This isn't cosmetic: it's the
+  position) — see `src/ui/hud.ts` → `updateHud`. This isn't cosmetic: it's the
   same feedback surface a vim user already trusts, repurposed as the HUD.
 
 ## Who it's for

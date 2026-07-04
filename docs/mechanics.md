@@ -1,7 +1,7 @@
 # Mechanics
 
 This is the systems reference. Everything here is implemented in
-`engine.js`, which is intentionally pure logic with no DOM — read it
+`src/engine/engine.ts`, which is intentionally pure logic with no DOM — read it
 alongside this doc as the ground truth.
 
 ## The core loop
@@ -27,14 +27,14 @@ individual keypresses and not on wall-clock time:
 - `12l` → **one** enemy tick, moves you twelve tiles (assuming the path is
   clear the whole way — see "Slides" below).
 - A bonked motion (walking into a wall) still consumes a tick — spam is
-  punished exactly like a real move (`engine.js` → `bonk()` calls `tick()`).
+  punished exactly like a real move (`src/engine/engine.ts` → `bonk()` calls `tick()`).
 
 This is the entire reason vim motions matter mechanically, not just
 thematically: **counted/compound motions are strictly better than
 button-mashing** because they cover more ground per enemy turn. A player
 who taps `l` twelve times gives zombies twelve free moves; a player who
 types `12l` gives them one. The UI even nags about this directly — see
-`ui.js` → `gameKey`'s "try 4l instead of llll" toast after four repeats of
+`src/ui/screens.ts` → `gameKey`'s "try 4l instead of llll" toast after four repeats of
 the same directional key.
 
 Ticks drive:
@@ -46,12 +46,12 @@ Ticks drive:
 
 ### Keystroke budget vs. par
 
-Every level has two numbers (`levels.js` → `limit`, `par`):
+Every level has two numbers (`src/levels.ts` → `limit`, `par`):
 - `limit` — hard cap. Hit it and the level ends in **FAIL** ("the cursor
   grows still"). This is a soft-fail, not a death — no enemy touched you,
   you just ran out of runway.
 - `par` — the target for full marks. Star rating on clear
-  (`ui.js` → `showClear`): `keys <= par` → 3 stars, `keys <= par*1.5` → 2
+  (`src/ui/screens.ts` → `showClear`): `keys <= par` → 3 stars, `keys <= par*1.5` → 2
   stars, else → 1 star.
 
 Because `limit` and `par` are both keystroke counts (not real seconds),
@@ -130,7 +130,7 @@ bombs can be used to detonate each other, including enemy-planted ones.
 
 This is a scoped-down vim inside the vim game — its own mode
 (`st.mode === 'terminal'`), its own pending-key state, and its own subset
-of commands (`termKey` in `engine.js`):
+of commands (`termKey` in `src/engine/engine.ts`):
 
 - Movement: `h` `l` `0` `$` (no `j`/`k` — it's a single line buffer).
 - Edits: `x` (delete char), `r{c}` (replace char), `~` (toggle case),
@@ -175,7 +175,7 @@ snapshot from `st.history`):
    costing one undo charge (`worldUndo`).
 2. **Death insurance**: on death, if `st.player.undo > 0` and history
    exists, pressing `u` (handled specially — see `key()`'s `dead` branch
-   and `ui.js`'s `DEAD` screen) calls `rescue()` instead: same restore,
+   and the UI's `DEAD` screen) calls `rescue()` instead: same restore,
    but also grants 2 iframe ticks so you don't immediately re-die on the
    same enemy contact.
 

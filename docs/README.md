@@ -3,7 +3,7 @@
 This is the design reference for Vimberman, kept separate from the top-level
 `README.md` (which is the player/dev-facing quickstart). These docs exist so a
 future contributor — human or agent — can pick up the project without having
-to reverse-engineer intent from `engine.js`.
+to reverse-engineer intent from `src/engine/engine.ts`.
 
 Read in this order if you're new to the project:
 
@@ -35,12 +35,12 @@ curve **is** a vim curriculum.
 
 ## Source of truth
 
-These docs describe the game as implemented in `engine.js`, `levels.js`,
-`ui.js`, and `index.html` as of this writing. If a doc and the code
+These docs describe the game as implemented in `src/engine/engine.ts`, `src/levels.ts`,
+the UI layer (`src/ui`, `src/render`), and `index.html` as of this writing. If a doc and the code
 disagree, the code wins — update the doc, not your assumptions. In
 particular:
 
-- Level content (maps, budgets, pars, teach order) lives in `levels.js`.
-- Every rule about what a keystroke does lives in `engine.js`, which is
+- Level content (maps, budgets, pars, teach order) lives in `src/levels.ts`.
+- Every rule about what a keystroke does lives in `src/engine/engine.ts`, which is
   pure logic with no DOM dependency — it's the actual rulebook.
 - `docs/architecture.md` explains why that split exists and how to keep it.
