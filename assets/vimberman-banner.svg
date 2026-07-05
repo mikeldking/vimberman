@@ -1,6 +1,6 @@
 <svg width="1280" height="640" viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">VIMBERMAN banner</title>
-  <desc id="desc">Retro 90s arcade box art for Vimberman: the pixel-art hero plants a bomb while zombies, a toad, an imp and a teleporting mage close in. Vim motions, bomb fuses, keystroke economy. 19 levels.</desc>
+  <desc id="desc">Retro 90s arcade box art for Vimberman: the pixel-art hero plants a bomb while zombies, a toad, an imp and a teleporting mage close in. Vim motions, bomb fuses, keystroke economy. Hella rad levels.</desc>
 <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#241245"/>
@@ -91,7 +91,7 @@
 <g transform="rotate(11 1156 118)" filter="url(#charShadow)">
     <polygon points="1156.0,26.0 1173.1,54.2 1202.0,38.3 1202.7,71.3 1235.7,72.0 1219.8,100.9 1248.0,118.0 1219.8,135.1 1235.7,164.0 1202.7,164.7 1202.0,197.7 1173.1,181.8 1156.0,210.0 1138.9,181.8 1110.0,197.7 1109.3,164.7 1076.3,164.0 1092.2,135.1 1064.0,118.0 1092.2,100.9 1076.3,72.0 1109.3,71.3 1110.0,38.3 1138.9,54.2" fill="#ffe93f" stroke="#15111f" stroke-width="5" stroke-linejoin="round"/>
     <g text-anchor="middle" class="fat">
-      <text x="1156" y="102" font-size="44" fill="#e5352b">19</text>
+      <text x="1156" y="100" font-size="34" fill="#e5352b">HELLA</text>
       <text x="1156" y="130" font-size="25" fill="#15111f">RAD</text>
       <text x="1156" y="156" font-size="25" fill="#15111f">LEVELS!</text>
     </g>
@@ -124,8 +124,8 @@
     <rect x="924" y="250" width="306" height="90" rx="20" fill="#fff56a" stroke="#15111f" stroke-width="6"/>
     <text x="946" y="286" font-size="24" fill="#15111f">TYPE 12l</text><text x="946" y="316" font-size="24" fill="#15111f">NOT llllllllllll</text></g>
 <g transform="translate(640 606) rotate(-0.8)" text-anchor="middle" class="mono" filter="url(#charShadow)">
-    <rect x="-462" y="-25" width="924" height="50" rx="25" fill="#fffdf4" stroke="#15111f" stroke-width="4"/>
-    <text y="8" font-size="22" font-weight="1000" fill="#071018">19 LEVELS · BUILT BY HERMES AGENT + FABLE 5 · PRS WELCOME</text>
+    <rect x="-360" y="-25" width="720" height="50" rx="25" fill="#fffdf4" stroke="#15111f" stroke-width="4"/>
+    <text y="8" font-size="22" font-weight="1000" fill="#071018">:wq TO WIN · BUILT BY FABLE 5 · PRS WELCOME</text>
   </g>
 </g>
 </g>
