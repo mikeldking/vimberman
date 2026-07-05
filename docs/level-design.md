@@ -1,6 +1,6 @@
 # Level Design
 
-Vimberman has eighteen levels, and they are not just eighteen maps — they're
+Vimberman has nineteen levels, and they are not just nineteen maps — they're
 a vim curriculum with a Bomberman skin. Every level introduces **exactly
 one** new motion or concept (`src/levels.ts` → `teaches`), stated once on the
 intro card (`intro: [...]`), and that level's layout is built to require
@@ -31,7 +31,8 @@ authoring rules, see `docs/level-audit.md`; for the keycap unlock system,
 | 15 | BALANCED BRACKETS | `%` — matching bracket | `match` | 27 / 62 | The trapdoor closet; lint zombie | 2 |
 | 16 | GREP | `/{word}` `n` — search | `search` | 8 / 20 | Moat bands (full gap rows) | 2 |
 | 17 | THE FINAL REFACTOR | everything, two wings | — | 36 / 60 | all threats | 3 |
-| 18 | AUTOMATE YOURSELF | `q`/`@` — macros (epilogue) | `macro` | 14 / 26 | Phased linter wings; manual play dies | 2 |
+| 18 | BABY STEPS, PROMOTED | worn keys — the tap tax | — | 24 / 28 | Bare hjkl refused; brutal budget | 2 |
+| 19 | AUTOMATE YOURSELF | `q`/`@` — macros (epilogue) | `macro` | 14 / 26 | Phased linter wings; manual play dies | 2 |
 
 "Routes proven" = distinct scripted lines asserted in `test/solve.test.ts`
 (speedrun always; safe/clever/greedy where the map supports them).

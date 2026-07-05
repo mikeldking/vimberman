@@ -566,6 +566,33 @@ export const LEVELS: LevelDef[] = [
     par: 36, limit: 60,
   },
   {
+    name: 'BABY STEPS, PROMOTED',
+    teaches: 'worn keys — lead with a count',
+    intro: [
+      'The first maze again. You are senior now, and the keys are',
+      'worn smooth: a bare tap of h j k or l does NOTHING.',
+      'Lead every motion with a number. Conviction registers.',
+      'Twenty-eight keystrokes. The maze has not gotten longer. You have.',
+    ],
+    map: [
+      '#############',
+      '#P....#.....#',
+      '#.###.#.###.#',
+      '#.#...#...#.#',
+      '#.#.#####.#.#',
+      '#.#.....#.#.#',
+      '#.###.#.#.#.#',
+      '#*....#...#E#',
+      '#############',
+    ],
+    terminals: {},
+    bushes: { '1,7': { type: 'K', amt: 10 } },
+    banned: ['h', 'j', 'k', 'l'],
+    hint: 'the same maze, counted. twelve commands is the whole walk.',
+    solution: '6j 4l 2k 2l 2j 2l 2k 2k 2h 2k 4l 6j',
+    par: 24, limit: 28,
+  },
+  {
     name: 'AUTOMATE YOURSELF',
     teaches: 'q @ — record and replay',
     intro: [

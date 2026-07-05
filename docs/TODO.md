@@ -373,12 +373,23 @@ and is meant to be executed **one item at a time** by whoever picks it up next
   a single-route teaching corridor per the audit's L3 verdict. Note for
   future authors: a t-landing tile must be FLOOR — the first draft stopped
   short onto a gap. 140/140 pass.
-- [ ] **6.2 Challenge modifiers ("broken keyboard" levels).**
+- [x] **6.2 Challenge modifiers ("broken keyboard" levels).**
   `LevelDef.banned?: string[]` — keys that error with flavor (`E: the h key
   snapped off`). One remix level: BABY STEPS with `hjkl` banned (counts/finds
   only) as an unlockable "nightmare" variant. Engine change is small
   (vocabulary system already gates keys); the design rule to uphold: banned ≠
   locked ≠ bonk — banned keys are free like locked ones.
+  done: 2026-07-04 — with one semantic refinement: banning hjkl outright
+  would kill counts too (5l ends in l), so `banned` = WORN KEYS: bare
+  normal-mode taps refused free ("worn smooth — lead with a count"), counted
+  presses work, find-arg positions exempt. Level 18 "BABY STEPS, PROMOTED"
+  (before the epilogue so AUTOMATE keeps the ending; macro→19, dot→20): the
+  original maze verbatim, hjkl worn, par 24 (12 counted commands) with a
+  brutal 28 limit — the nightmare is the tap tax + budget, NOT enemies: a
+  free chaser in a single-route maze is the audit's head-on anti-pattern
+  (first draft proved it by killing the speedrun at t3). Alternate proven
+  route "clamp": overshoot counts (9j 9l), walls as brakes. 4 engine tests.
+  146/146 pass.
 - [ ] **6.3 Grow the campaign to ~20 levels with chapter select.**
   (blocked: most of phases 3–5) Slot the new-motion levels into the chapter
   structure from 2.1; level select gains chapter headers; re-run the pacing

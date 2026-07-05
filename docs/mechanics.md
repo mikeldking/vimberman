@@ -85,7 +85,10 @@ tuned per level.
 
 Motions are **gated by vocabulary**: until a motion group's keycap (`?`
 tile) has been collected, pressing its key is *free* — no keystroke, no
-tick, just a dry echo. Locked ≠ bonk: a bonk is a legal command that
+tick, just a dry echo. A level may also declare **worn keys**
+(`LevelDef.banned`): bare presses of those normal-mode keys are refused
+free (same class as locked), but counted presses work and find-argument
+positions are exempt — the tap tax, taught in BABY STEPS, PROMOTED. Locked ≠ bonk: a bonk is a legal command that
 failed (costs a turn); a locked key is not in your language yet, same
 class as arrow keys. The engine defaults to everything-unlocked
 (`setVocab(null)`) so tests and headless use are unaffected; the UI opts

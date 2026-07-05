@@ -1121,3 +1121,44 @@ describe('kites (docs/new-mechanics.md §5b)', () => {
     expect(kite.y).toBe(1);
   });
 });
+
+describe('worn keys (LevelDef.banned — TODO 6.2)', () => {
+  const WORN = makeLevel({
+    map: ['#########', '#P..a...#', '#########'],
+    banned: ['h', 'l'],
+  });
+
+  it('a bare tap is refused free — no key, no tick', () => {
+    const st = boot(WORN);
+    game.key('l');
+    expect(st.player.x).toBe(1);
+    expect(st.keys).toBe(0);
+    expect(st.tick).toBe(0);
+    expect(st.echo).toContain('worn smooth');
+  });
+
+  it('a counted press works — the tap tax', () => {
+    const st = boot(WORN);
+    keys('2l');
+    expect(st.player.x).toBe(3);
+    expect(st.keys).toBe(2);
+    expect(st.tick).toBe(1);
+  });
+
+  it('a worn key still serves as a find argument', () => {
+    const st = boot(makeLevel({
+      map: ['#########', '#P..l...#', '#########'],
+      banned: ['h', 'l'],
+    }));
+    keys('fl'); // dash to the letter l — the arg position is exempt
+    expect(st.player.x).toBe(4);
+  });
+
+  it('unbanned motions are untouched', () => {
+    const st = boot(WORN);
+    keys('fa');
+    expect(st.player.x).toBe(4);
+    game.key('$');
+    expect(st.player.x).toBe(7);
+  });
+});

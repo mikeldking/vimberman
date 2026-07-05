@@ -86,6 +86,10 @@ export interface LevelDef {
    *  free-roaming imps/mages so inserting levels before it can't reshuffle
    *  its dice and rot its authored solutions. */
   seed?: number;
+  /** worn keys: these normal-mode keys refuse BARE presses (free, like
+   *  locked keys) but work with a count prefix — the tap tax. Never ban
+   *  Escape, digits, or find-argument letters you need. */
+  banned?: string[];
   par: number;
   limit: number;
 }

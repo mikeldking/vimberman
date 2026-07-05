@@ -63,7 +63,7 @@ edits. The world advances one tick per completed keystroke command — so
 Bombs aren't picked up; they're earned by opening a broken code-tile with
 `i` and fixing the word inside using real vim edit commands, then armed and
 dropped with `x`. Motions themselves are collectible: each level's keycap
-pickup adds its motion group to your permanent vocabulary. Eighteen levels
+pickup adds its motion group to your permanent vocabulary. Nineteen levels
 teach vim from `hjkl` up through `ciw` and `Ctrl-u`/`Ctrl-d` (a cloud
 layer), tightening keystroke budgets as the moveset grows, so the game's
 difficulty curve **is** a vim curriculum — and every level is proven by

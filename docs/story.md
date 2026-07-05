@@ -68,7 +68,7 @@ allowed to leave.
 
 ---
 
-## The arc — three chapters over 18 levels
+## The arc — three chapters over 19 levels
 
 Chapter boundaries match the existing difficulty/curriculum structure
 (see `docs/level-design.md`): cards appear before levels 1, 5, and 11.
@@ -85,7 +85,7 @@ Legacy has noticed the edits. Its symptoms escalate from shambling
 sweeping rows on a timer). Beat: the world's *rules* are hostile now, not
 just its inhabitants.
 
-**CHAPTER THREE — MERGE CONFLICT (levels 11–18).** The core modules
+**CHAPTER THREE — MERGE CONFLICT (levels 11–19).** The core modules
 nobody was allowed to touch. The rot stops shambling and starts racing
 you for the cycle (the mage debuts). Above the code floats the comment
 layer, where nothing executes. One refactor left. Beat: everything the

@@ -86,6 +86,11 @@ const ROUTES: Record<number, Record<string, string>> = {
     clever: 'w w ll i l ro 2l ~ l j j h 2b 3h G 6l x 4h h l h l l 7l k k',
   },
   18: {
+    // the senior flex: overshoot every count and let the walls brake —
+    // proves slides clamp normally while bare taps stay refused
+    clamp: '9j 9l 2k 2l 2j 2l 2k 2k 2h 2k 9l 9j',
+  },
+  19: {
     // belt-and-suspenders: automate wing 2, hand-fly wing 3 (the linter
     // phases are tuned so THIS cadence threads them; full-manual dies)
     mixed: 'l qa l 2j 2l 2k 3l q @a l 2j 2l 2k 3l',

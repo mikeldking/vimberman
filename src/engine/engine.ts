@@ -1483,6 +1483,16 @@ export function key(k: string): void {
   }
   if (k === 'Shift' || k === 'Control' || k === 'Alt' || k === 'Meta') return;
 
+  // worn keys (LevelDef.banned): a bare tap does nothing — free, like a
+  // locked key — but a counted press still works. Pending-op args pass
+  // (f{l} must still find the letter l on a worn-l level).
+  if (s.lv.banned && s.mode === 'normal' && !s.pending.count && !s.pending.op
+      && s.lv.banned.includes(k)) {
+    s.echo = 'E: the ' + k + ' key is worn smooth — a tap does nothing. lead with a count.';
+    fx.locked(k);
+    return;
+  }
+
   // a locked key is not in your language yet — free, no tick, like arrow keys
   const lg = lockedGroup(k);
   if (lg) {
