@@ -307,7 +307,9 @@ function onewayOk(c: string, dx: number, dy: number): boolean {
 function terrainOk(x: number, y: number, dx: number, dy: number): boolean {
   const c = pat(x, y);
   if (SOLID[c] || c === '~') return false;
-  if (!onewayOk(c, dx, dy)) return false;
+  // arrows are layer-scoped (docs/new-mechanics.md §5a): ground = one-way
+  // doors; sky = wind, standable from any direction
+  if (state().layer === 'ground' && !onewayOk(c, dx, dy)) return false;
   return true;
 }
 function enemyTerrainOk(x: number, y: number, dx: number, dy: number): boolean {
@@ -343,8 +345,8 @@ function enterTile(): void {
       s.echo = KEYCAP_INSTALLED[group];
       fx.keycap(group);
     }
-  } else if (c === 'E' && !sky) {
-    win();
+  } else if (c === 'E') {
+    win(); // ground or sky — v2 allows winning aloft (the export)
   }
   // stepping off a bomb (or rising away from it) seals it
   for (const b of s.bombs) if (b.soft && !(s.layer === 'ground' && onPlayer(b.x, b.y))) b.soft = false;
@@ -797,8 +799,29 @@ function tick(): void {
     }
   }
   if (s.player.iframes > 0) s.player.iframes--;
+  windDrift();
+  if (s.status !== 'play') { fx.tick(); return; } // drifted onto a sky exit
   pushSnap();
   fx.tick();
+}
+
+// wind (docs/new-mechanics.md §5a): standing on a sky arrow at tick-end
+// drifts you one tile with the current. Pinned (no move, no damage) if the
+// push target is solid or open air — wind is a current, not a cliff.
+function windDrift(): void {
+  const s = state();
+  if (s.layer !== 'sky' || !s.skyGrid) return;
+  const p = s.player;
+  const d = ONEWAY[s.skyGrid[p.y] ? s.skyGrid[p.y][p.x] ?? '' : ''];
+  if (!d) return;
+  const x = p.x + d[0];
+  const y = p.y + d[1];
+  const t = s.skyGrid[y] ? s.skyGrid[y][x] ?? '#' : '#';
+  if (SOLID[t] || t === '~') return;
+  p.x = x;
+  p.y = y;
+  enterTile();
+  fx.moved();
 }
 
 function bonk(msg?: string): void {

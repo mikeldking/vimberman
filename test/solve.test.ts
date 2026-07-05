@@ -55,8 +55,9 @@ const ROUTES: Record<number, Record<string, string>> = {
     greedy: 'jj 2l 4l jj 4l jj 0 jj',
   },
   12: {
-    // drop west of the welcoming committee instead of beside it
-    safe: 'l 3l <C-u> 6j 3h <C-d> h',
+    // the flytrap: leave a bomb by the updraft, hover while the shadow
+    // gathers a zombie onto it, then sweep the cleared top shelf for loot
+    flytrap: 'l l 2l x <C-u> j k j k <C-d> 8l 8h <C-u> 6j 3h <C-d>',
   },
   13: {
     // the loot line: left-pocket undo, mark at the chute instead of the gate,

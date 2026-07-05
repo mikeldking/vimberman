@@ -1002,3 +1002,62 @@ describe('the arsenal: sed terraformers (docs/arsenal.md §3)', () => {
     expect(game._internals.pendingBlast().size).toBeGreaterThan(0);
   });
 });
+
+describe('sky v2: wind + the flytrap (docs/new-mechanics.md §5)', () => {
+  const windy = (skyRow: string) => makeLevel({
+    map: ['#########', '#P@.....#', '#########'],
+    sky: ['#########', skyRow, '#########'],
+  });
+
+  it('standing in wind drifts one tile per tick, motions first', () => {
+    const st = boot(windy('#..>>...#'));
+    keys('l');
+    game.key('<C-u>');
+    game.key('l'); // step onto the wind at (3,1) → drift carries to (4,1)
+    expect(st.player.x).toBe(4);
+    game.key('k'); // bonk the ceiling — standing still is not standing still
+    expect(st.player.x).toBe(5);
+  });
+
+  it('wind never pushes into open air — pinned, unharmed', () => {
+    const st = boot(windy('#..>~...#'));
+    keys('l');
+    game.key('<C-u>');
+    game.key('l'); // onto the wind; its push target is open air
+    expect(st.player.x).toBe(3); // a current, not a cliff
+    expect(st.status).toBe('play');
+  });
+
+  it('sky arrows are wind, not one-ways: enterable against the current', () => {
+    const st = boot(windy('#...>...#'));
+    keys('l');
+    game.key('<C-u>');
+    keys('ll'); // through (3,1), onto the wind, drift to (5,1)
+    expect(st.player.x).toBe(5);
+    game.key('h'); // re-enter the wind tile moving LEFT — ground would refuse
+    expect(st.bonks).toBe(0); // no bonk: it's weather, not a door
+    expect(st.player.x).toBe(5); // stepped in, drifted right back out
+  });
+
+  it('a sky exit wins aloft — the export', () => {
+    const st = boot(windy('#..E....#'));
+    keys('l');
+    game.key('<C-u>');
+    game.key('l');
+    expect(st.status).toBe('won');
+  });
+
+  it('the flytrap: shadow-gathered zombies die to a pre-planted bomb', () => {
+    const st = boot(makeLevel({
+      map: ['#########', '#P@....Z#', '#########'],
+      sky: ['#########', '#.......#', '#########'],
+    }));
+    st.player.arsenal.push('bomb'); st.player.bombs = 1;
+    keys('l'); // onto the updraft
+    game.key('x'); // leave the present
+    game.key('<C-u>');
+    keys('lhlh'); // hover-dance; the zombie walks to the shadow
+    expect(st.status).toBe('play'); // you were never on that layer
+    expect(st.enemies.length).toBe(0); // it gathered; the fuse disagreed
+  });
+});

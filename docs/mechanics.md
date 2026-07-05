@@ -251,8 +251,12 @@ Constraints that make undo a resource, not a safety net:
 - **The sky layer (`sky` map, `@` updrafts, `Ctrl-u`/`Ctrl-d`)** — a
   second grid above the ground. Damage and contact are same-layer only;
   ground enemies keep hunting your coordinates while you're aloft (the
-  imp won't lay bombs and the mage won't fire at a player in the clouds).
-  No bombs, terminals, exits, or enemies up there in v1. All motions work
+  imp won't lay bombs and the mage won't fire at a player in the clouds)
+  — and a bomb left beside the updraft makes that gathering their
+  problem (the flytrap). Sky v2: arrows in sky grids are WIND (drift one
+  tile per tick at tick-end; never into open air), and `E` aloft wins.
+  Still no bombs or terminals up there — nothing executes in the
+  comment layer. Full spec: `docs/new-mechanics.md` §5. All motions work
   identically aloft on the sky grid.
 - **Keycaps (`?`)** — motion-unlock pickups; see the vocabulary note in
   Motions above.

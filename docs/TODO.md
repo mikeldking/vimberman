@@ -322,10 +322,21 @@ and is meant to be executed **one item at a time** by whoever picks it up next
   rendering contract codified (aloft sees ground ghosts; grounded sees sky
   silhouettes incl. kites for pre-reading). Bombing run stays rejected —
   comment-layer law. 5.2/5.3 unblocked.
-- [ ] **5.2 Implement wind + shadow-lure; rework level 12 to use both.**
+- [x] **5.2 Implement wind + shadow-lure; rework level 12 to use both.**
   (blocked: 5.1) Level 12's current sky route is two chords and zero
   decisions; after rework it should still be the gentle sky intro but with one
   wind lane and one optional shadow-lure kill for loot.
+  done: 2026-07-04 — engine: `windDrift()` at tick-end (player-only, pinned
+  at solids/open air, enterTile fires so drift sweeps bushes), `terrainOk`
+  one-way check now ground-only (sky arrows are weather — enterable against
+  the current, tested), sky `E` wins (enterTile guard lifted). The flytrap
+  needed zero engine change, exactly as specced — proven by an engine test
+  (bomb, rise, hover, shadow-gathered zombie dies) AND L12's new proven
+  route. L12 rework: B bush at spawn shelf, westward wind river on the sky's
+  bottom row, intro rewritten; speedrun now rides the river to par 9 (was
+  10) and ends by dropping straight onto E; alternate route = the full
+  flytrap loop (bomb by the updraft, hover-dance, top-shelf loot sweep, 21 ≤
+  26). 5 new wind/flytrap tests. 133/133 pass.
 - [ ] **5.3 New cloud level "CUMULUS GOLF" (ground+sky interleaved).**
   (blocked: 5.2) Mid-difficulty, multiple rises/drops, the sky-native enemy
   debuts here (leashed first, per the threat-ladder rule).
