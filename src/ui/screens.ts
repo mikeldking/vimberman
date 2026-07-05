@@ -1,9 +1,11 @@
 // Overlay screens (title/select/help/settings/intro/pause/dead/fail/clear)
 // and all keyboard routing. Menus are navigated with vim keys, of course.
 import * as game from '../engine/engine';
+import { LEVELS } from '../levels';
 import { resetEffects, sizeCanvas } from '../render/renderer';
 import { armIdle, stopAttract } from './attract';
 import { snd } from './audio';
+import { DRILLS } from './drills';
 import { slMode } from './hud';
 import { persist, resetProgress, save } from './save';
 import { ui } from './state';
@@ -72,6 +74,7 @@ function titleItems(): Array<{ label: string; act: () => void }> {
     items.push({ label: 'CONTINUE', act: () => showIntro(next) });
   }
   items.push({ label: 'PLAY', act: showSelect });
+  items.push({ label: 'DRILL', act: showDrill });
   items.push({ label: 'HOW TO PLAY', act: () => showHelp() });
   items.push({ label: 'SETTINGS', act: showSettings });
   return items;
@@ -123,6 +126,67 @@ function renderSelect(): void {
     return `${head}<div class="menu-item${i === menuIdx ? ' sel' : ''}${locked ? ' locked' : ''}">${i === menuIdx ? '> ' : '  '}${line}</div>`;
   });
   show(`<h2>SELECT LEVEL</h2>${rows.join('')}<div class="foot">j/k move · gg/G ends · Enter play · Esc back</div>`);
+}
+
+// ---------- drill mode (docs/TODO.md 6.4) ----------
+// Freeform practice: any owned motion group, a static coin arena, and a save
+// file that never hears about any of it.
+let drillIdx = 0; // which drill is loaded, for save-neutral retry/requeue
+function drillOwned(i: number): boolean {
+  return save.keycaps.includes(DRILLS[i].group);
+}
+function showDrill(): void {
+  ui.screen = 'DRILL';
+  ui.drill = false;
+  game.setLevels(LEVELS); // drop any loaded drill arena from the level set
+  menuLen = DRILLS.length;
+  menuIdx = Math.min(menuIdx, menuLen - 1);
+  if (!drillOwned(menuIdx)) menuIdx = 0; // core is always owned
+  slMode('MENU');
+  renderDrill();
+}
+function renderDrill(): void {
+  const rows = DRILLS.map(({ group, def }, i) => {
+    const label = game.VOCAB_GROUPS.find((g) => g.id === group)!.label;
+    const line = drillOwned(i)
+      ? `<span class="kbd">${label.padEnd(5)}</span>  ${def.name.padEnd(16)} par ${def.par}`
+      : `<span class="kbd">  ?  </span>  ????????????????  [LOCKED — its keycap is in the campaign]`;
+    return `<div class="menu-item${i === menuIdx ? ' sel' : ''}${drillOwned(i) ? '' : ' locked'}">${i === menuIdx ? '> ' : '  '}${line}</div>`;
+  });
+  show(`<h2>DRILL MODE</h2>
+    <div class="dim" style="margin-bottom:10px">reps for your fingers. no enemies, no saves, no stakes — the coins keep score.</div>
+    ${rows.join('')}<div class="foot">j/k move · Enter drill · Esc back</div>`);
+}
+function startDrill(i: number): void {
+  drillIdx = i;
+  ui.drill = true;
+  // the arena rides along at the end of the level set while the drill runs;
+  // every route back to a menu goes through showDrill, which resets the set
+  game.setLevels([...LEVELS, DRILLS[i].def]);
+  game.loadLevel(LEVELS.length);
+  ui.currentLevel = LEVELS.length + 1;
+  sizeCanvas();
+  ui.screen = 'GAME';
+  ui.exCmd = null;
+  bonkRing = [];
+  resetEffects();
+  hide();
+  updateTermbox();
+}
+function showDrillClear(): void {
+  ui.screen = 'CLEAR';
+  const st = game.state();
+  snd.clear();
+  const diff = st.keys - st.par;
+  const grade = diff <= 0 ? 'reflexes: COMPILED. ship it.'
+    : diff <= Math.floor(st.par * 0.5) ? 'clean reps. tighter next lap.'
+    : 'the reps only count if you count them.';
+  show(`<h1>DRILL COMPLETE</h1>
+    <div style="margin-top:8px">KEYS <span class="kbd">${st.keys}</span> / par ${st.par} ${diff <= 0 ? '<span class="stars">— under par!</span>' : ''}</div>
+    <div class="dim">bonks ${st.bonks}</div>
+    <div class="dim">${st.lv.name} drilled. ${grade}</div>
+    <div class="dim" style="margin-top:10px">nothing saved. nothing owed. muscle memory keeps its own files.</div>
+    <div class="foot">r again · Enter/Esc back to drills</div>`);
 }
 
 function showHelp(back?: () => void): void {
@@ -204,6 +268,8 @@ export function showIntro(n: number): void {
 }
 
 export function startLevel(n: number): void {
+  ui.drill = false;
+  game.setLevels(LEVELS); // in case a drill arena was still riding along
   game.loadLevel(n - 1);
   sizeCanvas();
   ui.screen = 'GAME';
@@ -230,6 +296,7 @@ function ghostOfPar(): string {
 }
 
 export function showClear(): void {
+  if (ui.drill) { showDrillClear(); return; } // practice never touches the save
   ui.screen = 'CLEAR';
   const st = game.state();
   const n = ui.currentLevel;
@@ -356,10 +423,12 @@ function runExCommand(cmd: string): void {
       st.echo = st.lv.hint ?? 'no hint. the map is the hint.';
       break;
     case 'q':
-      showSelect();
+      if (ui.drill) showDrill();
+      else showSelect();
       break;
     case 'q!':
-      startLevel(ui.currentLevel);
+      if (ui.drill) startDrill(drillIdx);
+      else startLevel(ui.currentLevel);
       break;
     case 'wq':
       st.echo = 'you\'re not done refactoring.';
@@ -475,6 +544,12 @@ export function handleKeydown(e: KeyboardEvent): void {
         showIntro(menuIdx + 1);
       }, showTitle);
       break;
+    case 'DRILL':
+      menuNav(k, renderDrill, () => {
+        if (!drillOwned(menuIdx)) { snd.error(); toast('locked — collect its keycap in the campaign first'); return; }
+        startDrill(menuIdx);
+      }, showTitle);
+      break;
     case 'HELP':
       if (k === 'Escape' || k === 'q' || (k === 'h' && !helpBack)) {
         const back = helpBack;
@@ -510,21 +585,25 @@ export function handleKeydown(e: KeyboardEvent): void {
     case 'PAUSE':
       menuNav(k, renderPause, () => {
         if (menuIdx === 0) resumeGame();
-        else if (menuIdx === 1) startLevel(ui.currentLevel);
+        else if (menuIdx === 1) { if (ui.drill) startDrill(drillIdx); else startLevel(ui.currentLevel); }
+        else if (ui.drill) showDrill();
         else showSelect();
       }, resumeGame);
       break;
     case 'DEAD':
       if (k === 'u' && game.canRescue()) { game.state().keys++; game.rescue(); }
-      else if (k === 'r') startLevel(ui.currentLevel);
-      else if (k === 'Escape') showSelect();
+      else if (k === 'r') { if (ui.drill) startDrill(drillIdx); else startLevel(ui.currentLevel); }
+      else if (k === 'Escape') { if (ui.drill) showDrill(); else showSelect(); }
       break;
     case 'FAIL':
-      if (k === 'r') startLevel(ui.currentLevel);
-      else if (k === 'Escape') showSelect();
+      if (k === 'r') { if (ui.drill) startDrill(drillIdx); else startLevel(ui.currentLevel); }
+      else if (k === 'Escape') { if (ui.drill) showDrill(); else showSelect(); }
       break;
     case 'CLEAR':
-      if (k === 'Enter' && ui.currentLevel < game.getLevels().length) showIntro(ui.currentLevel + 1);
+      if (ui.drill) {
+        if (k === 'r') startDrill(drillIdx);
+        else if (k === 'Enter' || k === 'Escape') showDrill();
+      } else if (k === 'Enter' && ui.currentLevel < game.getLevels().length) showIntro(ui.currentLevel + 1);
       else if (k === 'r') startLevel(ui.currentLevel);
       else if (k === 'Escape') showSelect();
       break;
