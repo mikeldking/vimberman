@@ -32,7 +32,7 @@ export const LEVELS: LevelDef[] = [
     gutter: false,
     hint: 'the maze has exactly one shape. walk it like you mean it.',
     solution: 'jjjjjj llll kk ll jj ll kk kk hh kk llll jjjjjj',
-    par: 40, limit: 110,
+    par: 36, limit: 110,
   },
   {
     name: 'COUNT THE CORRIDORS',
@@ -59,7 +59,7 @@ export const LEVELS: LevelDef[] = [
     keycaps: { '2,1': 'count' },
     hint: 'a zombie moves once per completed command. count, don\'t tap.',
     solution: 'l 9l 6j h',
-    par: 9, limit: 26,
+    par: 6, limit: 26,
   },
   {
     name: 'LEAP OF FAITH',
@@ -117,7 +117,7 @@ export const LEVELS: LevelDef[] = [
     keycaps: { '2,1': 'edit' },
     hint: 'the fuse is six turns. plan the exit before you light it.',
     solution: '4l jj hh i l ro ll kk 4h 4j x kkk h h 3j 4k h h h 4j 4l jj ll l i ll x h x h h k l l l j 6l',
-    par: 62, limit: 135,
+    par: 55, limit: 135,
   },
   {
     name: 'WORD BRIDGES',
@@ -249,7 +249,7 @@ export const LEVELS: LevelDef[] = [
     keycaps: { '2,1': 'cw', '1,2': 'cw' },
     hint: 'the plug above E cracks from the lobby. you never need the zombie.',
     solution: 'jj l i cw bomb <e> kk w w 3l j h x l k l l l j h j 4j l',
-    par: 32, limit: 65,
+    par: 31, limit: 65,
   },
   {
     name: 'AGAINST THE CURRENT',
@@ -279,7 +279,7 @@ export const LEVELS: LevelDef[] = [
     enemyOpts: { '10,3': { leash: 'row' } },
     hint: 'the chute is a promise. read the bottom row before you keep it.',
     solution: 'w w ll 7j l l l l l l l x 3k l l l l l 4j hhhh i cw bomb <e> hhhh x lll j j 7h gg w j j w k x b j j j j w lll 4j hhhh k k',
-    par: 73, limit: 130,
+    par: 72, limit: 130,
   },
   {
     name: 'MIND THE MARGINS',
@@ -355,7 +355,7 @@ export const LEVELS: LevelDef[] = [
     keycaps: { '2,1': 'inner' },
     hint: 'the mage never ports onto your row. so keep changing rows.',
     solution: 'w w ll jj l l l l hh hhh hh i ~~~~ hhhhh x llll k k hhhh j 3j l ll l i ciw bomb <e> lll ll l ll jj l l hhhh j j j j j j j j h x llll j j 7h hhhh 4k lll x hhh k h h j 5l l',
-    par: 112, limit: 165,
+    par: 108, limit: 165,
   },
   {
     name: 'HEAD IN THE CLOUDS',
@@ -609,7 +609,7 @@ export const LEVELS: LevelDef[] = [
     },
     hint: 'the cheapest word in the shop is three letters and hurts nobody.',
     solution: 'l i l re x lll hhh G $',
-    par: 15, limit: 34,
+    par: 14, limit: 34,
   },
   {
     name: 'THE FINAL REFACTOR',
@@ -650,7 +650,7 @@ export const LEVELS: LevelDef[] = [
     enemyOpts: { '10,3': { leash: 'row' }, '11,3': { leash: 'row' } },
     hint: 'north wing drills. south wing edits beside the mage. both work.',
     solution: 'w w ll i l ro 2l ~ l j j h 2b k x 2h h j k j k 3l 2j j j 7l',
-    par: 36, limit: 60,
+    par: 34, limit: 60,
   },
   {
     name: 'BABY STEPS, PROMOTED',
@@ -690,7 +690,7 @@ export const LEVELS: LevelDef[] = [
     ],
     map: [
       '#####################',
-      '#P..#.....#.....#..E#',
+      '#P?.#.....#.....#..E#',
       '###.#.###.#.###.#.###',
       '##!.*.##!.*.##!.*.###',
       '#####################',

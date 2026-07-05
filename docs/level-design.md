@@ -1,6 +1,6 @@
 # Level Design
 
-Vimberman has twenty levels, and they are not just twenty maps — they're
+Vimberman has 21 levels, and they are not just 21 maps — they're
 a vim curriculum with a Bomberman skin. Every level introduces **exactly
 one** new motion or concept (`src/levels.ts` → `teaches`), stated once on the
 intro card (`intro: [...]`), and that level's layout is built to require
@@ -14,25 +14,25 @@ authoring rules, see `docs/level-audit.md`; for the keycap unlock system,
 
 | # | Name | Teaches | Keycap granted | Par / Limit | New enemy/hazard | Routes proven |
 |---|---|---|---|---|---|---|
-| 1 | BABY STEPS | `h j k l` | — (`core` is free) | 40 / 110 | — (no enemies) | 1 |
-| 2 | COUNT THE CORRIDORS | counts + the gutter | `count` | 9 / 26 | Zombie (free-roam) | 2 |
+| 1 | BABY STEPS | `h j k l` | — (`core` is free) | 36 / 110 | — (no enemies) | 1 |
+| 2 | COUNT THE CORRIDORS | counts + the gutter | `count` | 6 / 26 | Zombie (free-roam) | 2 |
 | 3 | LEAP OF FAITH | `f F t ;` — dash, stop short, repeat | `find` | 21 / 52 | Imp (leashed), gaps `~` | 1 |
-| 4 | BUGFIX BOMBS | `i` `x` `r` — earn bombs | `edit` | 62 / 135 | Zombie (free-roam) | 1 |
+| 4 | BUGFIX BOMBS | `i` `x` `r` — earn bombs | `edit` | 55 / 135 | Zombie (free-roam) | 1 |
 | 5 | WORD BRIDGES | `w` `b` `e` | `word` | 8 / 18 | Imp (leashed) | 3 |
-| 6 | THE LONG WAY | `0` `$` `gg` `G` | `line` | 60 / 118 | Zombie (free-roam) | 1 |
+| 6 | THE LONG WAY | `0` `$` `gg` `G` | `line` | 60 / 118 | Zombie (free-roam) | 2 |
 | 7 | FLIP THE SCRIPT | flight motions flip toads | — | 9 / 22 | Toads ×4 | 3 |
-| 8 | REWRITE THE RULES | `cw` | `cw` | 32 / 65 | Zombie (col-leashed) | 2 |
-| 9 | AGAINST THE CURRENT | one-way tiles | — | 73 / 130 | Imp (leashed) + Zombie | 1 |
+| 8 | REWRITE THE RULES | `cw` | `cw` | 31 / 65 | Zombie (col-leashed) | 3 |
+| 9 | AGAINST THE CURRENT | one-way tiles | — | 72 / 130 | Imp (leashed) + Zombie | 1 |
 | 10 | MIND THE MARGINS | `0`/`$` as linter anchors | — | 15 / 34 | Linter rows `!` `\|` | 2 |
-| 11 | WARPED WORDS | `~` and `ciw`; hard rock `&` | `inner` | 112 / 165 | Mage (free-roam) | 1 |
+| 11 | WARPED WORDS | `~` and `ciw`; hard rock `&` | `inner` | 108 / 165 | Mage (free-roam) | 1 |
 | 12 | HEAD IN THE CLOUDS | `Ctrl-u` / `Ctrl-d` | `sky` | 9 / 26 | The sky layer; zombies ×4 | 2 |
 | 13 | CUMULUS GOLF | kites — flight cuts the string | — | 10 / 30 | Kite (sky-native, full speed); sky exit | 2 |
 | 14 | BOOKMARKED | `m{a}` / `` `{a} `` — marks | `mark` | 22 / 52 | The vault (a sealed one-way pocket) | 2 |
 | 15 | BALANCED BRACKETS | `%` — matching bracket | `match` | 27 / 62 | The trapdoor closet; lint zombie | 2 |
 | 16 | GREP | `/{word}` `n` — search | `search` | 8 / 20 | Moat bands (full gap rows) | 2 |
 | 17 | DON'T REPEAT YOURSELF | `.` — repeat the last edit | `dot` | 43 / 76 | The two-stroke golf gate; overlapping fuses | 3 |
-| 18 | CHOOSE YOUR WORDS | the arsenal — the crafted word IS the route | — | 15 / 34 | Three word-gated bands (sed / grep / bomb) | 3 |
-| 19 | THE FINAL REFACTOR | everything, two wings | — | 36 / 60 | all threats | 3 |
+| 18 | CHOOSE YOUR WORDS | the arsenal — the crafted word IS the route | — | 14 / 34 | Three word-gated bands (sed / grep / bomb) | 3 |
+| 19 | THE FINAL REFACTOR | everything, two wings | — | 34 / 60 | all threats | 3 |
 | 20 | BABY STEPS, PROMOTED | worn keys — the tap tax | — | 24 / 28 | Bare hjkl refused; brutal budget | 2 |
 | 21 | AUTOMATE YOURSELF | `q`/`@` — macros (epilogue) | `macro` | 14 / 26 | Phased linter wings; manual play dies | 2 |
 
@@ -53,8 +53,9 @@ the vertical axis (`Ctrl-u`/`Ctrl-d`) → flight as scissors (kites, the
 sky's toad lesson at lethal stakes) → bookmarks as un-commitment
 (`m`/`` ` ``, the vault) → paired doors (`%`, the trapdoor) → search as
 transit (`/`+`n`, the moats) → edits as muscle memory (`.`, the
-two-stroke golf gate) → synthesis (18, THE FINAL REFACTOR — adds
-nothing new) → the worn-keys remix (19) → the epilogue: automation
+two-stroke golf gate) → arsenal route choice (18, CHOOSE YOUR WORDS) →
+synthesis (19, THE FINAL REFACTOR — adds nothing new) → the worn-keys
+remix (20) → the epilogue: automation
 (`q`/`@`, one turn per wing).
 
 **Threat ladder** (what's hunting you):
@@ -92,15 +93,16 @@ picked from feel:
   and one avoidable detour. Alternate routes (safe/clever) are asserted to
   win within `limit`.
 
-Slack (`limit/par`) is no longer strictly monotonic. The 20-level re-audit
+Slack (`limit/par`) is no longer strictly monotonic. The 21-level re-audit
 (2026-07-04) shows three regimes: levels that teach a new *system* (7
 toads, 10 linter, 12 sky, 13 kites) run generous (~2.4–3.0×) because the
 player is learning rules; the mid-campaign new-motion levels (14–16) hold
 ~2.3–2.5×; and the tail tightens on purpose — 17 runs 1.77× because its
-dot lesson demands finale-grade fuse choreography, the finale (18) runs
-1.67×, the worn-keys remix (19) is the deliberate outlier at 1.17×, and
-the epilogue (20) relaxes to 1.86× so macros get experimentation room.
-The precision levels (9 at 1.78×, 11 at 1.47×) remain the mid-campaign
+dot lesson demands finale-grade fuse choreography, the arsenal showcase
+(18) runs 2.43×, the finale (19) runs 1.76×, the worn-keys remix (20) is
+the deliberate outlier at 1.17×, and the epilogue (21) relaxes to 1.86×
+so macros get experimentation room.
+The precision levels (9 at 1.81×, 11 at 1.53×) remain the mid-campaign
 skill checks. The finale's slack budget assumes the speedrun's four
 deliberate mage-dodge keys, not wait-filler — see the wait-tax findings
 in `docs/level-audit.md`.
@@ -119,9 +121,9 @@ in `docs/level-audit.md`.
   the same group — spares in the box.
 - **Bushes as a drip-feed, not a stockpile.** The item type is chosen to
   matter *for that level*: K bushes refund the scenic route's cost, `R`
-  only appears in levels containing hard rock `&`, `B` only before rock
-  gates. Slides sweep items for free, so a bush mid-shaft rewards `gg`/`G`
-  without costing a detour.
+  only appears where blast radius changes rock play (`&` or distant `%`
+  work), `B` only appears before a bomb beat. Slides sweep items for free,
+  so a bush mid-shaft rewards `gg`/`G` without costing a detour.
 - **Leashed enemies are how a level author "reuses" a threat type safely** —
   but never in a 1-wide corridor the player must cross (that's a forced
   wait, the anti-pattern the audit measured at 52 dead keys in the old
@@ -136,7 +138,7 @@ in `docs/level-audit.md`.
   spelled out on level 10's card; the sky's rules on level 12's. The intro
   card names the hazard and its counterplay in the same sentence.
 
-## Adding a 14th level (or rebalancing)
+## Adding a level (or rebalancing)
 
 1. Identify the **one** new thing it teaches — if you can't name it in one
    clause, it's not ready.

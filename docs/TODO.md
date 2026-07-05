@@ -42,6 +42,15 @@ history and the `done:` notes in prior revisions of this file for the details.
 
 ## Parking lot (unranked, revisit now that 6.4 closed)
 
+- Strategic design questions from the level-quality audit:
+  - Single-route policy is now triaged in
+    `docs/campaign-playthrough-audit.md`: L1/L3/L4 are acceptable tutorial
+    set-pieces; revisit L9/L11 first if the campaign needs more route variety.
+  - Should `spark` get a lower-pressure pre-finale appearance, since the only
+    campaign spark tile is currently in L19 THE FINAL REFACTOR?
+  - Route-count drift is now guarded by `test/level-design.test.ts`, which
+    checks `docs/level-design.md` against the shared route manifest in
+    `test/level-routes.ts`.
 - ~~Arsenal showcase level~~ — shipped 2026-07-05 as L18 CHOOSE YOUR WORDS:
   three terminals (sad→sed / grip→grep / b0mb→bomb), three word-gated
   bands, one exit. sed digs the plug shaft and never hurts you (speedrun,
