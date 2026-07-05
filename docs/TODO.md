@@ -291,14 +291,17 @@ and is meant to be executed **one item at a time** by whoever picks it up next
   clever route re-proven typing sed and digging its gates pacifistically.
   4 new tests. 128/128 pass. Wave-1 arsenal complete (bomb/grep/sed all
   live); yank/put (wave 2) and the S-shield (4.4) remain.
-- [ ] **4.4 One new item type.** Proposal: `S` shield bush (+2 iframes, once) —
+- [~] **4.4 One new item type.** Proposal: `S` shield bush (+2 iframes, once) —
   the "spend now or bank it" counterpart to U. Spec in `docs/mechanics.md`
   items table first; keep the four-item austerity in mind — only add it if a
   Phase 5/6 level design actually wants it.
+  deferred: 2026-07-04 — by its own criterion: no Phase 5/6 level design has
+  asked for it yet. Moved to the parking lot; revisit when a sky-v2 or
+  campaign-growth level needs a shield beat. Do NOT implement speculatively.
 
 ## Phase 5 — The sky, for real
 
-- [ ] **5.1 Spec doc: sky v2 in `docs/new-mechanics.md` (extend §4).**
+- [x] **5.1 Spec doc: sky v2 in `docs/new-mechanics.md` (extend §4).**
   Docs only. Three systems: **wind currents** (sky tiles that push you one
   tile per tick — the sky's one-way analog; standing still is not standing
   still), **kites/birds** (one sky-native enemy; flight motions should
@@ -308,6 +311,17 @@ and is meant to be executed **one item at a time** by whoever picks it up next
   fuse timing makes it a real puzzle, not a free kill). Also: sky exits (`E`
   aloft) and whether cloud gaps let you *see* the ground layer (rendering
   question — answer it in the spec).
+  done: 2026-07-04 — new-mechanics.md §5 written (+ conflict-register entries
+  9–11). Decisions: `<>^V` in SKY grids = wind (layer-scoped semantics, no
+  new glyphs); drift resolves at tick-end after motions, never pushes into
+  open air (pinned, no damage), moves the player only; kite `Y` = sky-only
+  full-speed greedy chaser, crosses air, blocked by thunderheads, and any
+  horizontal flight over it CUTS THE STRING (toad lesson at lethal stakes);
+  the flytrap (shadow-lure) needs NO engine change — codified as an
+  authoring pattern (bomb, rise, ring forms, boom); sky `E` legal in v2;
+  rendering contract codified (aloft sees ground ghosts; grounded sees sky
+  silhouettes incl. kites for pre-reading). Bombing run stays rejected —
+  comment-layer law. 5.2/5.3 unblocked.
 - [ ] **5.2 Implement wind + shadow-lure; rework level 12 to use both.**
   (blocked: 5.1) Level 12's current sky route is two chords and zero
   decisions; after rework it should still be the gentle sky intro but with one
@@ -339,6 +353,8 @@ and is meant to be executed **one item at a time** by whoever picks it up next
 
 ## Parking lot (unranked, revisit when phases close)
 
+- `S` shield bush (+2 iframes, once) — deferred from 4.4; add only when a
+  level design wants a shield beat.
 - Level-shape variety: a 40-wide "one-liner" map (pure `0 $ f ;` fantasy), a
   tall shaft map for `gg/G` — needs camera/scroll work in the renderer first;
   renderer currently assumes the whole map fits the canvas.

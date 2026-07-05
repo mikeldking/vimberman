@@ -359,6 +359,123 @@ early level needs).
 
 ---
 
+## 5. Sky v2 — wind, kites, and the flytrap (TODO 5.1)
+
+The v1 sky is admitted empty: no hazards, no exits, nothing to do aloft
+but cross. Sky v2 adds exactly three systems, all inside the fiction's
+one law (`docs/story.md`): **the sky is the comment layer — nothing
+executes there.** No bombs, no terminals aloft, ever. Wind, kites and
+exits don't execute anything; they ARE the comments.
+
+### 5a. Wind currents — the sky's one-way analog
+
+New semantics for `<` `>` `^` `V` **when they appear in a `sky` grid**:
+wind tiles, not one-ways (the ground meaning is unchanged; the sky has
+no one-ways in any level and the arrow mnemonic — a directional force —
+is the same idea blowing instead of blocking).
+
+- A wind tile is ordinary standable cloud. At the END of every world
+  tick, a player standing on wind is pushed **one tile** in its
+  direction. Standing still is not standing still: a bonk, a mark-set
+  tick, any tick — you drift.
+- Motions resolve first, then the drift. Landing on wind from any
+  motion is legal; the push happens on that same tick's end.
+- A blocked push (thunderhead, closed cloud edge, open air `~`) pins
+  you: no move, no damage. **Wind never pushes you into open air** — it
+  is a current, not a cliff.
+- Drift enters tiles fully (`enterTile` fires): drifting across a sky
+  bush sweeps it. Chained wind tiles carry you one tile per tick, a
+  river you ride while doing other things — the authoring payoff: a
+  wind lane crossing a level is free eastward travel and a tax on
+  westward plans.
+- Wind moves the player only. Kites ignore it (they were born there);
+  there is nothing else aloft.
+- Undo: the drift happens inside the tick, so snapshots capture
+  post-drift positions — `u` works with no special cases.
+
+### 5b. The kite (`Y`) — the sky-native enemy
+
+**One-line pitch:** the fastest chaser in the game, in the layer with
+no walls to hide behind — and any flight motion over it cuts the
+string. Lore (story.md register): *a TODO from 2019. still circling.
+still load-bearing, somehow.*
+
+- Sky-only spawn glyph `Y` (sky grids only; `EnemyType` gains
+  `'kite'`, `Enemy.aloft: true`). Contact rules are same-layer, as all
+  damage already is: a kite can never touch a grounded player.
+- Moves **every tick** (no half-speed, no hop cycle — the sky's open
+  geometry is balanced by pure speed), greedy-axis toward the player,
+  crosses open air `~` freely, blocked only by thunderheads `#`.
+- **Cutting the string:** any completed horizontal flight motion
+  (`w b e f F t T ; ,`) whose swept span crosses the kite kills it
+  outright — no corpse, no refund; it was a comment. This extends the
+  toad lesson to lethal stakes: aloft, flight is not just travel, it is
+  the only weapon. `flipToadsAlong`'s ground-only guard grows a
+  sky branch (cut instead of flip).
+- One kite per level to start; it makes the sky a place you cross with
+  intent rather than a rest stop. Leashable (`patrolTick`) like
+  everything else for gentler introductions.
+- Rescue: the clear-ground scan counts same-layer kites only.
+
+### 5c. The flytrap — the shadow-lure payoff
+
+**No engine change required** — this is an authoring pattern the
+existing rules already support, now codified: ground enemies path
+toward your coordinates while you're aloft (the shadow), enemies never
+step onto bomb tiles, and blasts kill grounded enemies regardless of
+where the player is. Therefore:
+
+1. Drop a bomb beside an updraft.
+2. `Ctrl-u`. The zombies converge on your shadow and pile up around
+   the hover point (they can't stack, so they ring it).
+3. The fuse does the rest. Drop back down onto the ash.
+
+Authoring rules: the updraft must be reachable from the bomb spot
+within the fuse (≤4 ticks); the plaza needs ≥3 open tiles adjacent to
+the shadow point so the ring forms inside blast radius; par assumes
+drop → rise → two gathering ticks → boom. The intro-card line writes
+itself: *processes polling a reference they can't dereference.*
+
+### 5d. Sky exits and the rendering contract
+
+- `E` is now legal in a sky grid: winning aloft is allowed (the
+  export). `enterTile`'s ground-only guard on `E` is lifted for v2.
+  Terminals and bombs stay forbidden aloft — that law is load-bearing
+  fiction and mechanics both.
+- Rendering (the open question, answered — mostly by existing code):
+  **aloft you always see the ground** (ghost pass at 0.25 alpha,
+  enemies/bombs at 0.35 — required for flytrap play and safe drops);
+  **grounded you see sky silhouettes** at 0.13 so cloud routes can be
+  pre-read (the audit's pre-read rule). v2 adds kites to the
+  silhouette pass — a route you can't pre-read is a trap, not a
+  puzzle. Open air `~` in the sky grid shows the ground through at
+  full strength, as today.
+
+### Rollout
+
+- **5.2**: wind + the flytrap, and rework level 12 (HEAD IN THE
+  CLOUDS) to use both — its sky route today is two chords and zero
+  decisions; after rework: one wind lane, one optional flytrap kill
+  for loot, same gentle-intro budget class.
+- **5.3**: "CUMULUS GOLF" — mid-difficulty ground+sky interleave,
+  kite debut (leashed first, per the threat ladder), sky exit.
+- The old "Extensions" list above (bombing run, The Bird, down-shafts)
+  is superseded by this section; the bombing run remains rejected for
+  v2 (it breaks the comment-layer law).
+
+### Rejected alternatives
+
+Distinct wind glyphs instead of reusing arrows (burns four legend
+chars for a distinction the layer already makes) · wind affecting
+kites (two drifting systems compound into unreadable trajectories) ·
+kites diving to the ground layer (breaks the same-layer damage
+invariant that makes the sky legible) · sky terminals ("nothing
+executes there" is the whole fiction — and the rest stop the sky must
+not become) · wind pushing into open air for a fall-back-to-ground
+mechanic (stealth damage; falling should never be a surprise).
+
+---
+
 ## Conflict register (cross-mechanic and legacy)
 
 1. **Toads × flight-over-enemies:** flight already ignores all enemies;
@@ -379,3 +496,16 @@ early level needs).
 8. **`Ctrl-u` vs `u`:** distinct keys; the death screen's `u`-rescue must
    not fire on `Ctrl-u`. The key handler passes `<C-u>`/`<C-d>` tokens —
    the one genuinely new input-path requirement in this spec.
+9. **Arrow glyphs are layer-scoped (sky v2):** `<>^V` on the ground =
+   one-way tiles; in a sky grid = wind. One glyph set, two semantics,
+   disambiguated entirely by which grid it sits in — `terrainOk`
+   (one-way checks) reads the player layer already; wind resolution is
+   a separate sky-only pass. Level authors: never describe sky arrows
+   as one-ways in intro copy.
+10. **Kite × flight-over-enemies:** ground flights still ignore all
+    enemies; the sky branch of the swept-interval check cuts kites.
+    Toads flip, kites die, Z/I/M remain indifferent — one lesson per
+    enemy, per the bestiary rule.
+11. **Wind × updraft/drop:** `Ctrl-d` legality is checked on the tile
+    you occupy AFTER any drift that tick; drifting onto a sky `@` is
+    just floor (sky `@` remains cosmetic in v2).
