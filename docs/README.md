@@ -13,7 +13,7 @@ Read in this order if you're new to the project:
    turn clock, motions, the bomb-from-editing loop, items, undo, win/fail.
 3. **[bestiary.md](bestiary.md)** — the three enemy types, their AI, and the
    design role each plays.
-4. **[level-design.md](level-design.md)** — the ten-level curriculum, what
+4. **[level-design.md](level-design.md)** — the level curriculum, what
    each level teaches, how budgets/pars are tuned, and the shape of the
    difficulty curve.
 5. **[ui-ux.md](ui-ux.md)** — screen flow, HUD/statusline, audio, juice,
@@ -26,7 +26,7 @@ Design expansions (the v2 rework):
 
 7. **[level-audit.md](level-audit.md)** — the designer audit of the
    original ten levels and the multi-path solvability framework that
-   drove the 13-level campaign.
+   grew the campaign to its current nineteen levels.
 8. **[new-mechanics.md](new-mechanics.md)** — toads (flippable enemies),
    the linter sweep (`0`/`$` with teeth), the relative-number gutter, and
    the cloud layer (`Ctrl-u`/`Ctrl-d`).

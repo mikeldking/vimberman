@@ -144,9 +144,7 @@
   <!-- footer strip -->
   <g transform="translate(102 548)" class="mono" filter="url(#glow)">
     <rect x="0" y="0" width="1076" height="58" rx="29" fill="#ffffff" opacity=".96"/>
-    <text x="34" y="38" font-size="24" font-weight="1000" fill="#071018">13 LEVELS</text>
-    <text x="190" y="38" font-size="23" font-weight="1000" fill="#071018">BUILT ENTIRELY BY HERMES AGENT + FABLE 5</text>
-    <text x="720" y="38" font-size="21" font-weight="1000" fill="#071018">PRS WELCOME: UNIMAGINABLY MORE FUN</text>
+    <text x="538" y="38" font-size="23" font-weight="1000" fill="#071018" text-anchor="middle">19 LEVELS · BUILT BY HERMES AGENT + FABLE 5 · PRS WELCOME</text>
   </g>
 
   <rect width="1280" height="640" fill="url(#scan)"/>
