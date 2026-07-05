@@ -359,10 +359,20 @@ and is meant to be executed **one item at a time** by whoever picks it up next
 
 ## Phase 6 — Campaign growth & curriculum tightening
 
-- [ ] **6.1 Force `t/T` and `;`/`,` somewhere.**
+- [x] **6.1 Force `t/T` and `;`/`,` somewhere.**
   Audit-style pass: no current level *requires* stop-short or find-repeat.
   Either retrofit level 3 (a toad/hazard ON the `f`-target tile so `t` is the
   safe landing, `;` chains the row) or make it level 15's one-new-thing.
+  done: 2026-07-04 — took the retrofit path (no renumber churn). L3 LEAP OF
+  FAITH: the row-1 descent shaft now sits ONE SHORT of the `a` (ta lands on
+  it exactly; fa pays a backtrack), and the c-row and f-row now RHYME
+  (repeated letters) so `;` chains both dashes at a one-key discount each.
+  Par 25 → 21 with the entire saving coming from t + ;×2 — economy-forced,
+  which is this game's definition of forced. Intro/hint teach the idea
+  ("sometimes the door is BESIDE the letter", "these rows rhyme"). Kept as
+  a single-route teaching corridor per the audit's L3 verdict. Note for
+  future authors: a t-landing tile must be FLOOR — the first draft stopped
+  short onto a gap. 140/140 pass.
 - [ ] **6.2 Challenge modifiers ("broken keyboard" levels).**
   `LevelDef.banned?: string[]` — keys that error with flavor (`E: the h key
   snapped off`). One remix level: BABY STEPS with `hjkl` banned (counts/finds

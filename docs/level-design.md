@@ -16,7 +16,7 @@ authoring rules, see `docs/level-audit.md`; for the keycap unlock system,
 |---|---|---|---|---|---|---|
 | 1 | BABY STEPS | `h j k l` | — (`core` is free) | 40 / 110 | — (no enemies) | 1 |
 | 2 | COUNT THE CORRIDORS | counts + the gutter | `count` | 9 / 26 | Zombie (free-roam) | 2 |
-| 3 | LEAP OF FAITH | `f{c}` `F{c}` (vs `t`/`T`) | `find` | 25 / 65 | Imp (leashed), gaps `~` | 1 |
+| 3 | LEAP OF FAITH | `f F t ;` — dash, stop short, repeat | `find` | 21 / 52 | Imp (leashed), gaps `~` | 1 |
 | 4 | BUGFIX BOMBS | `i` `x` `r` — earn bombs | `edit` | 62 / 135 | Zombie (free-roam) | 1 |
 | 5 | WORD BRIDGES | `w` `b` `e` | `word` | 8 / 18 | Imp (leashed) | 3 |
 | 6 | THE LONG WAY | `0` `$` `gg` `G` | `line` | 60 / 118 | Zombie (free-roam) | 1 |
