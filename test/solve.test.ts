@@ -8,19 +8,8 @@
 //    level is solvable multiple distinct ways within the keystroke limit.
 import { describe, it, expect, beforeAll } from 'vitest';
 import * as game from '../src/engine/engine';
+import { expand } from '../src/engine/script';
 import { LEVELS } from '../src/levels';
-
-// tokens separated by spaces; each token is a sequence of single-char keys,
-// except <e> = Escape, <C-u>/<C-d> = control chords. Example: "10l fa <C-u>"
-export function expand(s: string): string[] {
-  const out: string[] = [];
-  for (const tok of s.trim().split(/\s+/)) {
-    if (tok === '<e>') out.push('Escape');
-    else if (tok === '<C-u>' || tok === '<C-d>') out.push(tok);
-    else out.push(...tok.split(''));
-  }
-  return out;
-}
 
 function run(levelIdx: number, script: string) {
   const st = game.loadLevel(levelIdx);
@@ -43,6 +32,12 @@ const ROUTES: Record<number, Record<string, string>> = {
     // through the word chamber, zero enemy contact
     safe: 'll jj jj 8l jj l',
   },
+  6: {
+    // the lint route: both tiles (fix + clean), then pin the zombie behind a
+    // bomb at the trio-3 choke and take column 11 while it's ash
+    lint: 'j G ll gg ll 4j i 2l x G ll 4k i f# x x gg ll G x gg h h l l G'
+      + ' k k j k j k j k j k j j l x h k j k k G ll gg ll G',
+  },
   7: {
     // left rail loot, flip the bottom toad in passing
     clever: '6j l 2w 3l',
@@ -51,7 +46,9 @@ const ROUTES: Record<number, Record<string, string>> = {
   },
   8: {
     // the mid-drop: fall off the bridge, edit T2 inside the zombie's lane
-    clever: '3l l j j l h l h l h l l i cw bomb <e> ll 2j x 3k h l h l 3j ll jj ll',
+    clever: '3l l j j l h l h l h l l i cw sed <e> ll 2j x 3k h l h l 3j ll jj ll',
+    // the coin cache: counted hops beat the 6-tick clock, bomb the east gate
+    coins: '4j i l 3l 3l gg l l l w l l j x k h h h h l l j j j j j j l',
   },
   10: {
     // right-side descent, $-anchor personality
@@ -62,10 +59,30 @@ const ROUTES: Record<number, Record<string, string>> = {
     safe: 'l 3l <C-u> 6j 3h <C-d> h',
   },
   13: {
+    // the loot line: left-pocket undo, mark at the chute instead of the gate,
+    // sweep the vault cache too, then walk the bomb east and wait out the
+    // fuse west of the blast — a different mark placement IS the personality
+    safe: 'l l j j h h k k l 3l ma 2j 2l `a 8l x 4h h l h l 4l 2j',
+  },
+  14: {
+    // the unhurried line: nook loot first (no fuse pressure), then the
+    // closet, trapdoor out, and shuffling out the fuse in the top corridor
+    safe: 'l l % j k % 2h 2j l 2l i l ro l x % h l h l h 7h 2j l 8l fE',
+  },
+  15: {
+    // the loot lane: sweep all three bushes along the same /bug chain
+    greedy: 'l /bug<cr> 7l n n 5l n 3h fE',
+  },
+  16: {
     // south arena: skip T1, G down the rail, ciw beside the mage
     safe: 'w w 3l j j h 2b 3h G ll ll i ciw bomb <e> ll x 4h h l h l l 7l k k',
     // hybrid: T1's two bombs, then the south wing skipping T2
     clever: 'w w ll i l ro 2l ~ l j j h 2b 3h G 6l x 4h h l h l l 7l k k',
+  },
+  17: {
+    // belt-and-suspenders: automate wing 2, hand-fly wing 3 (the linter
+    // phases are tuned so THIS cadence threads them; full-manual dies)
+    mixed: 'l qa l 2j 2l 2k 3l q @a l 2j 2l 2k 3l',
   },
 };
 

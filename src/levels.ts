@@ -3,6 +3,7 @@
 // direction of travel allowed when entering)  a-z lettered tiles  * bush  E exit
 // P player  Z zombie  I imp  M mage  Q toad  T code-tile (terminal)
 // ? keycap (motion unlock)  ! linter emitter (in wall)  | margin  @ updraft
+// ()[]{} paired bracket doors (% jumps between partners; 0-or-2 per kind)
 // A level's `sky` array is the cloud layer, same size as `map`.
 import type { LevelDef } from './engine/types';
 
@@ -156,6 +157,7 @@ export const LEVELS: LevelDef[] = [
       '0 slides to the row start, $ to its end.',
       'gg slams to the top of your column, G to the bottom.',
       'Slides sweep up items on the way and stop at trouble.',
+      'A second tile is lint-infested: inside a tile, f{char} dashes, x deletes.',
     ],
     map: [
       '###############',
@@ -163,7 +165,7 @@ export const LEVELS: LevelDef[] = [
       '#?#.#.#.#.#.#.#',
       '#.#.#.#.#.#.#.#',
       '#.#.#.#.#.#.#.#',
-      '#.#*#T#.#%#Z#*#',
+      '#.#*#T#T#%#Z#*#',
       '#.#.#.#.#.#.#.#',
       '#.#.#.#.#.#.#.#',
       '#.#.#.#.#.#.#.#',
@@ -172,6 +174,8 @@ export const LEVELS: LevelDef[] = [
     ],
     terminals: {
       '5,5': { broken: 'bo0mb', target: 'bomb', grants: 2, hint: '2l  x' },
+      // purging the lint arms you with a linter of your own (docs/arsenal.md)
+      '7,5': { kind: 'clean', broken: 'bomb(##);', grants: 1, arms: 'grep', hint: 'f#  xx' },
     },
     bushes: { '3,5': { type: 'K', amt: 10 }, '13,5': { type: 'U', amt: 1 } },
     enemyOpts: { '11,5': { phase: 1 } },
@@ -218,7 +222,9 @@ export const LEVELS: LevelDef[] = [
       'Some words are beyond repair.  cw  wipes from the cursor',
       'to the word end and drops you into INSERT mode —',
       'type the new word, then  Esc  to commit it.',
-      'Two gates, two terminals, three ways through. Choose.',
+      'A coin cache hums in the west wall: land on every o',
+      'before its clock runs out, or the coins respawn.',
+      'Two gates, three terminals, three ways through. Choose.',
     ],
     map: [
       '###############',
@@ -226,14 +232,16 @@ export const LEVELS: LevelDef[] = [
       '#?..#.....#...#',
       '#.T.#..T..##%##',
       '#...#.....#...#',
-      '#...%..Z..%...#',
+      '#T..%..Z..%...#',
       '#...#.*.*.#...#',
       '#...#.....#..E#',
       '###############',
     ],
     terminals: {
       '2,3': { broken: 'dud', target: 'bomb', grants: 1, hint: 'cw bomb Esc' },
-      '7,3': { broken: 'fizz', target: 'bomb', grants: 2, hint: 'cw bomb Esc' },
+      // the pacifist's key: sed digs but never kills — and it's a shorter edit
+      '7,3': { broken: 'fizz', target: 'sed', grants: 2, hint: 'cw sed Esc' },
+      '1,5': { kind: 'coins', broken: '.o..o..o', deadline: 6, grants: 1, hint: 'l 3l 3l — spam loses' },
     },
     bushes: { '6,6': { type: 'K', amt: 10 }, '8,6': { type: 'U', amt: 1 } },
     enemyOpts: { '7,5': { leash: 'col' } },
@@ -317,6 +325,7 @@ export const LEVELS: LevelDef[] = [
       'ciw wipes the whole word you are inside, from anywhere in it.',
       'A mage now blinks around you. Never linger in its row.',
       'Hard rock & only cracks under a widened blast — find the bush.',
+      'The south-east tile is a GOLF tile: one stroke, or it resets.',
     ],
     map: [
       '###############',
@@ -328,12 +337,13 @@ export const LEVELS: LevelDef[] = [
       '#.#############',
       '#.>..T..*..>..#',
       '#.###########.#',
-      '#..Z....*.....#',
+      '#..Z....*...T.#',
       '###############',
     ],
     terminals: {
       '6,3': { broken: 'BOMB', target: 'bomb', grants: 1, hint: '~~~~' },
       '5,7': { broken: 'zzzz', target: 'bomb', grants: 2, hint: 'ciw bomb Esc' },
+      '12,9': { kind: 'golf', broken: 'Bomb', target: 'bomb', strokes: 1, grants: 1, hint: 'one stroke. you know the one.' },
     },
     bushes: {
       '13,1': { type: 'K', amt: 10 },
@@ -389,11 +399,105 @@ export const LEVELS: LevelDef[] = [
     par: 10, limit: 26,
   },
   {
+    name: 'BOOKMARKED',
+    teaches: 'm{a} `{a} — bookmarks',
+    intro: [
+      'm then a letter drops a bookmark. Free — thinking costs nothing.',
+      'Backtick then the letter jumps you straight back to it.',
+      'The vault below holds the only bomb. The vault has no stairs.',
+      'Mark before you drop. And know this: explosions eat bookmarks.',
+    ],
+    map: [
+      '###############',
+      '#P?...........#',
+      '#.#.#V###.#.#%#',
+      '#.*.#*.*#.Z*#E#',
+      '###############',
+    ],
+    terminals: {},
+    bushes: {
+      '2,3': { type: 'U', amt: 1 },
+      '5,3': { type: 'B', amt: 1 },
+      '7,3': { type: 'K', amt: 8 },
+      '11,3': { type: 'K', amt: 6 },
+    },
+    enemyOpts: { '10,3': { leash: 'row' } },
+    keycaps: { '2,1': 'mark' },
+    hint: 'the vault is a promise to your future self. mark first, fall second.',
+    solution: 'l 11l ma 8h 2j `a x 2h j j k h k 2l 2j',
+    par: 22, limit: 52,
+  },
+  {
+    name: 'BALANCED BRACKETS',
+    teaches: '% — jump to the matching bracket',
+    intro: [
+      'Brackets come in pairs. Stand on one, press  %  — you are',
+      'at its partner. Instantly. Both directions. No questions.',
+      'The bomb closet has one door, and your blast will fill it.',
+      'A lint zombie sweeps the exit row. f and w still matter.',
+    ],
+    map: [
+      '###############',
+      '#P?[....)...#]#',
+      '#.###########*#',
+      '#.>*T(.%>okZE##',
+      '###############',
+    ],
+    terminals: {
+      '4,3': { broken: 'b(mb', target: 'bomb', grants: 1, hint: 'l ro' },
+    },
+    bushes: {
+      '3,3': { type: 'U', amt: 1 },
+      '13,2': { type: 'K', amt: 10 },
+    },
+    enemyOpts: { '11,3': { leash: 'row' } },
+    keycaps: { '2,1': 'match' },
+    hint: 'the closet bracket is a door out. the corridor bracket is a door in.',
+    solution: 'l h 2j l 2l i l ro l x % 5h % j k % 2h 2j l fE',
+    par: 27, limit: 62,
+  },
+  {
+    name: 'GREP',
+    teaches: '/{word} n — search the whole file',
+    intro: [
+      '/ then a word, then Enter — you are AT that word. Anywhere.',
+      'n repeats the jump to the next match, wrapping around.',
+      'Typing in the prompt is free. Thinking always is.',
+      'The moats have no bridges. The word "bug" appears four times.',
+    ],
+    map: [
+      '###############',
+      '#P?..bug....*.#',
+      '#.....~~......#',
+      '#..Z.....bug..#',
+      '#~~~~~~~~~~~~~#',
+      '#..bug..*.I...#',
+      '#~~~~~~~~~~~~~#',
+      '#.*..bug....E.#',
+      '###############',
+    ],
+    terminals: {},
+    bushes: {
+      '12,1': { type: 'K', amt: 6 },
+      '8,5': { type: 'U', amt: 1 },
+      '2,7': { type: 'K', amt: 5 },
+    },
+    enemyOpts: { '10,5': { leash: 'row' } },
+    keycaps: { '2,1': 'search' },
+    hint: 'four bugs, one query. the moat was never the obstacle.',
+    solution: 'l /bug<cr> n n n fE',
+    par: 8, limit: 20,
+  },
+  {
     name: 'THE FINAL REFACTOR',
+    // pinned to the index it had when its routes were authored — insertions
+    // before it must not reshuffle the mage's dice
+    seed: 12,
     teaches: 'everything — and a merciless budget',
     intro: [
       'No new tricks. No slack in the budget.',
       'Two wings, one vault, a mage with opinions.',
+      'The vault tile runs a scan head. Never end a stroke under it.',
       'Golf it. Every keystroke is ammunition.',
     ],
     map: [
@@ -404,7 +508,7 @@ export const LEVELS: LevelDef[] = [
       '#.##%##########',
       '#.##*##########',
       '#*##*##########',
-      '#.##.......E###',
+      '#.##.T.....E###',
       '#.#########^.##',
       '#..M.T..&...*.#',
       '###############',
@@ -412,6 +516,7 @@ export const LEVELS: LevelDef[] = [
     terminals: {
       '12,1': { broken: 'b0mB', target: 'bomb', grants: 2, hint: 'l ro  2l ~' },
       '5,9': { broken: 'rusty', target: 'bomb', grants: 1, hint: 'ciw bomb Esc' },
+      '5,7': { kind: 'spark', broken: 'o......o', deadline: 8, grants: 1, hint: 'h grabs, $ finishes — don\'t camp' },
     },
     bushes: {
       '4,5': { type: 'U', amt: 1 },
@@ -423,5 +528,33 @@ export const LEVELS: LevelDef[] = [
     hint: 'north wing drills. south wing edits beside the mage. both work.',
     solution: 'w w ll i l ro 2l ~ l j j h 2b k x 2h h j k j k 3l 2j j j 7l',
     par: 36, limit: 60,
+  },
+  {
+    name: 'AUTOMATE YOURSELF',
+    teaches: 'q @ — record and replay',
+    intro: [
+      'q then a letter records. q stops. @ letter replays the lot —',
+      'and the whole replay is ONE turn. The world barely notices.',
+      'Three identical wings. The linters have learned your rhythm.',
+      'Record the first wing by hand. Ship the other two.',
+    ],
+    map: [
+      '#####################',
+      '#P..#.....#.....#..E#',
+      '###.#.###.#.###.#.###',
+      '##!.*.##!.*.##!.*.###',
+      '#####################',
+    ],
+    terminals: {},
+    bushes: {
+      '4,3': { type: 'K', amt: 4 },
+      '10,3': { type: 'K', amt: 4 },
+      '16,3': { type: 'K', amt: 4 },
+    },
+    linters: { '2,3': {}, '8,3': { phase: 3 }, '14,3': { phase: 4 } },
+    keycaps: { '2,1': 'macro' },
+    hint: 'the sweep cannot hit what has already left. one turn per wing.',
+    solution: 'l qa l 2j 2l 2k 3l q @a @a',
+    par: 14, limit: 26,
   },
 ];

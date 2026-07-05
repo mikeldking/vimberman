@@ -8,7 +8,7 @@ module layout and the invariants worth preserving if you extend the code.
 
 | Path | Role | Depends on |
 |---|---|---|
-| `src/levels.ts` | Pure data — 13 levels as ASCII maps (+ optional sky layers), terminal definitions, bush contents, keycaps, linters, budgets, reference solutions, enemy leash options. | `engine/types` |
+| `src/levels.ts` | Pure data — 17 levels as ASCII maps (+ optional sky layers), terminal definitions, bush contents, keycaps, linters, budgets, reference solutions, enemy leash options. | `engine/types` |
 | `src/engine/types.ts` | All shared domain types (`GameState`, `Enemy`, `LevelDef`, `FxHooks`, …). | nothing |
 | `src/engine/rng.ts` | Seeded mulberry32 PRNG. | nothing |
 | `src/engine/engine.ts` | Pure game logic — motions, terminal editing, bombs/blast, enemy AI, undo, win/fail/death. No DOM access at all. | `rng`, `types` |

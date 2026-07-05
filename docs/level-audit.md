@@ -143,4 +143,4 @@ author the speedrun first, set `par` to its measured length, then set
   the finale should synthesize without wait-filler — density, not length.
 - **Level count:** each of toads / linter rows / cloud layer deserves its
   own one-new-thing level per `docs/level-design.md`'s rule; the campaign
-  is now 13 levels (see the curriculum table there).
+  has since grown past 13 levels (see the curriculum table there).

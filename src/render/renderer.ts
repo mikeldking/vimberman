@@ -194,6 +194,10 @@ function drawTerrain(st: ReturnType<typeof game.state>, grid: string[][], now: n
       } else if (c >= 'a' && c <= 'z') {
         sprite(sprites.keycap, x, y);
         glyph(c, x, y - 0.07, '#4dd0e1', 0.4);
+      } else if ('()[]{}'.includes(c)) {
+        // bracket-pair doors: paired glyphs pulse in sync so partners read
+        sprite(sprites.keycap, x, y, { glow: blink ? 8 : 3, glowColor: '#ff8c1a' });
+        glyph(c, x, y - 0.07, '#ff8c1a', 0.46, 4);
       } else if (c === 'T') {
         const t = st.terminals[x + ',' + y];
         if (t && t.solved) sprite(sprites.termOff, x, y);
@@ -416,6 +420,9 @@ function draw(now: number): void {
     const f = set[Math.floor(now / (urgent ? 110 : 260)) % 2];
     const puff = urgent ? 1 + 0.06 * Math.sin(now / 60) : 1;
     sprite(f, b.x, b.y, { scale: puff, glow: urgent ? 10 : 0, glowColor: '#ff3b3b' });
+    // variant bombs telegraph their nature on the shell
+    if (b.kind === 'grep') glyph('≡', b.x, b.y + 0.16, '#ff5566', 0.34, urgent ? 8 : 4);
+    else if (b.kind === 'sed') glyph('§', b.x, b.y + 0.16, '#7ce9a2', 0.34, urgent ? 8 : 4);
     glyph(String(Math.max(0, b.fuse)), b.x + 0.3, b.y - 0.32, urgent ? '#ff9d9d' : '#ffe9a0', 0.28);
   }
 

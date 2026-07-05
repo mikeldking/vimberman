@@ -48,7 +48,7 @@ export function updateHud(): void {
   keysEl.textContent = `KEYS ${st.keys}/${st.limit}`;
   keysEl.className = frac > 0.5 ? '' : frac > 0.2 ? 'warn' : 'danger';
   $('hud-right').textContent =
-    `BOMBS ${'●'.repeat(st.player.bombs)}${'○'.repeat(Math.max(0, 3 - st.player.bombs))}  UNDO ${st.player.undo}  R${st.player.radius}`;
+    `BOMBS ${st.player.arsenal.map((k) => k === 'grep' ? '≡' : k === 'sed' ? '§' : '●').join('')}${'○'.repeat(Math.max(0, 3 - st.player.arsenal.length))}  UNDO ${st.player.undo}  R${st.player.radius}`;
   if (ui.screen === 'GAME') {
     slMode(st.mode === 'terminal' ? (st.term && st.term.insert ? 'INSERT' : 'EDIT') : 'NORMAL');
   }

@@ -2,7 +2,7 @@
 // renderer, HUD and screen modules can all read it without import cycles.
 
 export type Screen =
-  | 'TITLE' | 'SELECT' | 'HELP' | 'SETTINGS' | 'INTRO'
+  | 'TITLE' | 'SELECT' | 'HELP' | 'SETTINGS' | 'CHAPTER' | 'INTRO'
   | 'GAME' | 'PAUSE' | 'DEAD' | 'FAIL' | 'CLEAR';
 
 export const ui = {

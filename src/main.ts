@@ -7,8 +7,8 @@ import {
 } from './render/renderer';
 import { snd } from './ui/audio';
 import {
-  handleKeydown, noteDeath, resumeGame, showClear, showDead, showFail, showPause,
-  toast, showTitle,
+  applyCrt, handleKeydown, noteDeath, resumeGame, showClear, showDead, showFail,
+  showPause, toast, showTitle,
 } from './ui/screens';
 import { updateTermbox } from './ui/termbox';
 import { persist, save } from './ui/save';
@@ -60,8 +60,14 @@ game.fx.squash = () => {
   toast(game.state().echo);
 };
 game.fx.sweep = (tiles) => { snd.sweep(); kick(3); addSweep(tiles); };
+game.fx.sed = (tiles) => {
+  snd.solved(); // a substitution, not a boom — no shake
+  for (const [x, y] of tiles) sparkle(x, y, '#7ce9a2');
+};
 game.fx.rise = () => snd.rise();
 game.fx.drop = () => snd.drop();
+game.fx.coin = () => { snd.item(); updateTermbox(); };
+game.fx.termReset = () => { snd.error(); updateTermbox(); };
 game.fx.keycap = (group) => {
   snd.keycap();
   const p = game.state().player;
@@ -80,5 +86,6 @@ game.fx.locked = () => {
 
 initRenderer(document.getElementById('game') as HTMLCanvasElement);
 window.addEventListener('keydown', handleKeydown);
+applyCrt();
 showTitle();
 startLoop();

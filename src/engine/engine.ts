@@ -1,8 +1,8 @@
 // Vimberman — game engine. Pure logic, no DOM; the UI layer supplies fx hooks.
 import { mulberry32 } from './rng';
 import type {
-  Bomb, Enemy, FindMemo, FxHooks, GameState, ItemType, LevelDef, Linter,
-  LinterState, Terminal, VocabGroup,
+  Bomb, BombKind, Enemy, FindMemo, FxHooks, GameState, ItemType, LevelDef,
+  Linter, LinterState, Terminal, TermSession, VocabGroup,
 } from './types';
 
 const SOLID: Record<string, 1> = { '#': 1, '%': 1, '&': 1, '!': 1 };
@@ -18,6 +18,7 @@ export const fx: FxHooks = {
   item() {}, rescue() {}, death() {}, win() {}, fail() {}, wantPause() {},
   enterTerm() {}, exitTerm() {}, telegraph() {}, tick() {}, collectBush() {},
   flip() {}, squash() {}, sweep() {}, rise() {}, drop() {}, keycap() {}, locked() {},
+  coin() {}, termReset() {}, sed() {},
 };
 
 let LEVEL_SET: LevelDef[] = [];
@@ -60,6 +61,11 @@ export const VOCAB_GROUPS: Array<{ id: VocabGroup; label: string }> = [
   { id: 'cw', label: 'cw' },
   { id: 'inner', label: '~ ciw' },
   { id: 'sky', label: '^U ^D' },
+  { id: 'mark', label: 'm `' },
+  { id: 'match', label: '%' },
+  { id: 'dot', label: '.' },
+  { id: 'search', label: '/ n' },
+  { id: 'macro', label: 'q @' },
 ];
 
 const LOCKED_ECHO: Record<VocabGroup, (k: string) => string> = {
@@ -72,6 +78,11 @@ const LOCKED_ECHO: Record<VocabGroup, (k: string) => string> = {
   cw: () => "E: 'c' — unmapped. rewriting words is a level 8 privilege.",
   inner: (k) => `E: '${k}' — unmapped. level 11. patience.`,
   sky: () => 'E: the sky is a level 12 feature.',
+  mark: () => "E: 'm' — unmapped. bookmarks are a later chapter.",
+  match: () => "E: '%' — unmapped. its keycap is waiting between two brackets.",
+  dot: () => "E: '.' — unmapped. first learn the edits worth repeating.",
+  search: () => "E: '/' — unmapped. grep is earned.",
+  macro: (k) => `E: '${k}' — unmapped. automation is the last lesson.`,
 };
 
 const KEYCAP_INSTALLED: Record<VocabGroup, string> = {
@@ -84,6 +95,11 @@ const KEYCAP_INSTALLED: Record<VocabGroup, string> = {
   cw: 'keycap [cw] installed — some words deserve it',
   inner: 'keycap [~ ciw] installed — surgical',
   sky: 'keycap [^U ^D] installed — the ceiling was a lie',
+  mark: 'keycap [m `] installed — the file remembers where you\'ve been',
+  match: 'keycap [%] installed — every bracket has a partner',
+  dot: 'keycap [.] installed — do it again, for one key',
+  search: 'keycap [/ n] installed — the whole file is one hop away',
+  macro: 'keycap [q @] installed — teach the file to play itself',
 };
 
 // which group (if any) a key needs and lacks right now; null = allowed
@@ -95,17 +111,20 @@ function lockedGroup(k: string): VocabGroup | null {
     const T = s.term!;
     if (T.insert) return null;
     const P = T.pending;
-    if (P.op === 'r') return null;
+    if (P.op === 'r' || P.op === 'f' || P.op === 'F') return null; // char arguments
     if (P.op === 'c' && k === 'i') return need('inner');
     if (P.op === 'c' || P.op === 'ci') return null;
     if (k === 'c') return need('cw');
     if (k === '~') return need('inner');
+    if (k === 'f' || k === 'F' || k === ';') return need('find');
+    if (k === 'w' || k === 'b' || k === 'e') return need('word');
     if (k >= '1' && k <= '9') return need('count');
+    if (k === '.') return need('dot');
     return null;
   }
   const P = s.pending;
   if (P.op && 'fFtT'.includes(P.op)) return null; // char argument to a vetted find
-  if (P.op === 'g') return null;
+  if (P.op === 'g' || P.op === 'm' || P.op === '`' || P.op === 'q' || P.op === '@') return null;
   if (k >= '1' && k <= '9') return need('count');
   if (k === '0' && P.count) return need('count');
   if (k.length === 1 && 'fFtT;,'.includes(k)) return need('find');
@@ -113,10 +132,38 @@ function lockedGroup(k: string): VocabGroup | null {
   if (k === 'w' || k === 'b' || k === 'e') return need('word');
   if (k === '0' || k === '$' || k === 'g' || k === 'G') return need('line');
   if (k === '<C-u>' || k === '<C-d>') return need('sky');
+  if (k === 'm' || k === '`') return need('mark');
+  if (k === '%') return need('match');
+  if (k === '.') return need('dot');
+  if (k === '/' || k === 'n') return need('search');
+  if (k === 'q' || k === '@') return need('macro');
   return null;
 }
 
 // ---------- level loading ----------
+// bracket-pair doors (docs/motions-v2.md §2): each kind must appear exactly
+// 0 or 2 times per layer (one opener, one closer) so `%` is never ambiguous
+const BRACKET_KINDS: Array<[string, string]> = [['(', ')'], ['[', ']'], ['{', '}']];
+function buildPairs(idx: number, grid: string[][], layer: 'ground' | 'sky', pairs: Record<string, string>): void {
+  const found: Record<string, Array<[number, number]>> = {};
+  for (let y = 0; y < grid.length; y++) {
+    for (let x = 0; x < grid[y].length; x++) {
+      const c = grid[y][x];
+      if ('()[]{}'.includes(c)) (found[c] ??= []).push([x, y]);
+    }
+  }
+  for (const [open, close] of BRACKET_KINDS) {
+    const o = found[open] ?? [];
+    const c = found[close] ?? [];
+    if (!o.length && !c.length) continue;
+    if (o.length !== 1 || c.length !== 1) {
+      throw new Error(`level ${idx + 1}: bracket pair ${open}${close} must appear exactly once each on the ${layer} layer`);
+    }
+    pairs[layer + ':' + o[0][0] + ',' + o[0][1]] = c[0][0] + ',' + c[0][1];
+    pairs[layer + ':' + c[0][0] + ',' + c[0][1]] = o[0][0] + ',' + o[0][1];
+  }
+}
+
 export function loadLevel(idx: number): GameState {
   const lv = LEVEL_SET[idx];
   const grid = lv.map.map((r) => r.split(''));
@@ -153,24 +200,35 @@ export function loadLevel(idx: number): GameState {
     }
     skyGrid = lv.sky.map((r) => r.split(''));
   }
+  const pairs: Record<string, string> = {};
+  buildPairs(idx, grid, 'ground', pairs);
+  if (skyGrid) buildPairs(idx, skyGrid, 'sky', pairs);
   const terminals: Record<string, Terminal> = {};
   for (const k in lv.terminals) {
     const t = lv.terminals[k];
+    const word = t.target ?? '';
     terminals[k] = {
-      key: k, broken: t.broken, target: t.target, grants: t.grants, hint: t.hint,
+      key: k, kind: t.kind ?? 'fix', broken: t.broken, target: word,
+      glitch: t.glitch ?? '#', coin: t.coin ?? 'o',
+      deadline: t.deadline ?? 8, strokes: t.strokes ?? 8,
+      grants: t.grants, hint: t.hint,
+      arms: t.arms ?? (word === 'grep' || word === 'sed' ? word : 'bomb'),
       buffer: t.broken.split(''), cursor: 0, solved: false,
     };
   }
   st = {
     idx, lv, grid, skyGrid, layer: 'ground', W, H,
-    player: { ...player, bombs: 0, radius: 2, undo: 3, iframes: 0 },
+    player: { ...player, arsenal: [], bombs: 0, radius: 2, undo: 3, iframes: 0 },
     enemies, bombs: [], projectiles: [], terminals, linters,
     keys: 0, tick: 0, limit: lv.limit, par: lv.par,
     mode: 'normal', term: null,
     pending: { count: '', op: null },
-    lastFind: null, lastCmd: '', echo: '',
+    lastFind: null, marks: {}, marksWiped: false, pairs, lastEdit: null,
+    searchBuf: null, lastSearch: null,
+    registers: {}, recording: null, lastMacro: null,
+    lastCmd: '', echo: '',
     status: 'play', deathMsg: '',
-    rng: mulberry32(0x9e3779b9 ^ (idx * 2654435761)),
+    rng: mulberry32(0x9e3779b9 ^ ((lv.seed ?? idx) * 2654435761)),
     history: [],
     explosionsThisTick: [],
     bonks: 0, cmdCounts: {},
@@ -192,7 +250,8 @@ function snap(): string {
     sky: s.skyGrid ? s.skyGrid.map((r) => r.join('')) : null,
     layer: s.layer,
     p: s.player, en: s.enemies, bo: s.bombs, pr: s.projectiles,
-    terms, tick: s.tick, limit: s.limit,
+    terms, tick: s.tick, limit: s.limit, marks: s.marks, le: s.lastEdit,
+    ls: s.lastSearch, reg: s.registers, lm: s.lastMacro,
   });
 }
 function pushSnap(): void {
@@ -207,7 +266,11 @@ function restore(raw: string): void {
   s.skyGrid = d.sky ? d.sky.map((r: string) => r.split('')) : null;
   s.layer = d.layer ?? 'ground';
   s.player = d.p; s.enemies = d.en; s.bombs = d.bo; s.projectiles = d.pr;
-  s.tick = d.tick; s.limit = d.limit;
+  s.tick = d.tick; s.limit = d.limit; s.marks = d.marks ?? {};
+  s.lastEdit = d.le ?? null;
+  s.lastSearch = d.ls ?? null;
+  s.registers = d.reg ?? {};
+  s.lastMacro = d.lm ?? null;
   for (const k in d.terms) Object.assign(s.terminals[k], d.terms[k]);
 }
 function worldUndo(): void {
@@ -286,13 +349,19 @@ function enterTile(): void {
   // stepping off a bomb (or rising away from it) seals it
   for (const b of s.bombs) if (b.soft && !(s.layer === 'ground' && onPlayer(b.x, b.y))) b.soft = false;
 }
+// push crafted bombs onto the typed FIFO queue, clamped at the carry cap
+function grantBombs(kind: BombKind, n: number): void {
+  const p = state().player;
+  for (let i = 0; i < n && p.arsenal.length < 3; i++) p.arsenal.push(kind);
+  p.bombs = p.arsenal.length;
+}
 function applyItem(type: ItemType, amt: number): void {
   const s = state();
   const p = s.player;
   if (type === 'K') { s.limit += amt; s.echo = '+' + amt + ' keystrokes'; }
   if (type === 'R') { p.radius += 1; s.echo = 'blast radius +1'; }
   if (type === 'U') { p.undo += 1; s.echo = '+1 undo charge'; }
-  if (type === 'B') { p.bombs = Math.min(3, p.bombs + 1); s.echo = '+1 bomb'; }
+  if (type === 'B') { grantBombs('bomb', 1); s.echo = '+1 bomb'; }
   fx.item(type, amt);
 }
 function win(): void {
@@ -368,15 +437,16 @@ function dropBomb(): void {
   const s = state();
   const p = s.player;
   if (s.layer === 'sky') { bonk('no bombs in the clouds'); return; }
-  if (p.bombs < 1) { bonk('no bombs — fix a code-tile (T) with i'); return; }
+  if (p.arsenal.length < 1) { bonk('no bombs — fix a code-tile (T) with i'); return; }
   if (bombAt(p.x, p.y)) { bonk('already a bomb here'); return; }
-  p.bombs--;
-  s.bombs.push({ x: p.x, y: p.y, fuse: 6, r: p.radius, soft: true });
+  const kind = p.arsenal.shift()!;
+  p.bombs = p.arsenal.length;
+  s.bombs.push({ x: p.x, y: p.y, fuse: 6, r: p.radius, kind, soft: true });
   s.lastCmd = 'x';
   fx.bomb();
   tick();
 }
-function blastTiles(bomb: Bomb, destroy: boolean, chainQ: Bomb[] | null): Array<[number, number]> {
+function blastTiles(bomb: Bomb, destroy: boolean, chainQ: Bomb[] | null, sed = false): Array<[number, number]> {
   const s = state();
   const tiles: Array<[number, number]> = [[bomb.x, bomb.y]];
   for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
@@ -386,7 +456,8 @@ function blastTiles(bomb: Bomb, destroy: boolean, chainQ: Bomb[] | null): Array<
       const c = at(x, y);
       if (c === '#' || c === '!') break;
       if (c === '&') {
-        if (bomb.r >= 3) { tiles.push([x, y]); if (destroy) s.grid[y][x] = '.'; }
+        // s/rock/floor/ doesn't match granite — sed never cracks hard rock
+        if (!sed && bomb.r >= 3) { tiles.push([x, y]); if (destroy) s.grid[y][x] = '.'; }
         break;
       }
       if (c === '%') { tiles.push([x, y]); if (destroy) s.grid[y][x] = '.'; break; }
@@ -405,27 +476,53 @@ function blastTiles(bomb: Bomb, destroy: boolean, chainQ: Bomb[] | null): Array<
   }
   return tiles;
 }
+// grep line bomb: its whole row, both ways, exactly a linter beam — stops at
+// solids, spares margins, kills occupants only (docs/arsenal.md §2)
+function grepTiles(b: Bomb): Array<[number, number]> {
+  const s = state();
+  const out: Array<[number, number]> = [[b.x, b.y]];
+  for (const dir of [1, -1] as const) {
+    for (let x = b.x + dir; x >= 0 && x < s.W; x += dir) {
+      const c = at(x, b.y);
+      if (SOLID[c]) break;
+      if (c !== '|') out.push([x, b.y]);
+    }
+  }
+  return out;
+}
 function explode(initial: Bomb[]): void {
   const s = state();
   const q = initial.slice();
-  const all: Array<[number, number]> = [];
+  const plus: Array<[number, number]> = [];
+  const beams: Array<[number, number]> = [];
+  const washes: Array<[number, number]> = [];
   while (q.length) {
     const b = q.shift()!;
     if (b.done) continue;
     b.done = true;
-    all.push(...blastTiles(b, true, q));
+    // beams don't burn and washes don't either: neither grep nor sed
+    // chains outward, but a plus-blast touching a placed one triggers it
+    // (blastTiles pushes any discovered bomb into q)
+    if (b.kind === 'grep') beams.push(...grepTiles(b));
+    else if (b.kind === 'sed') washes.push(...blastTiles(b, true, null, true));
+    else plus.push(...blastTiles(b, true, q));
   }
   s.bombs = s.bombs.filter((b) => !b.done);
-  const hit = new Set(all.map(([x, y]) => x + ',' + y));
+  // sed tiles are deliberately NOT in the kill set — substitution, not fire
+  const hit = new Set([...plus, ...beams].map(([x, y]) => x + ',' + y));
   s.enemies = s.enemies.filter((e) => {
     if (!hit.has(e.x + ',' + e.y)) return true;
     if (e.type === 'mage' && e.immune) return true;
     return false;
   });
   s.projectiles = s.projectiles.filter((p) => !hit.has(p.x + ',' + p.y));
-  s.explosionsThisTick = all;
+  s.explosionsThisTick = plus;
   s.history = []; // no undoing past a detonation
-  fx.explosion(all);
+  // the blast rearranges the file — bookmarks rot with the history
+  if (Object.keys(s.marks).length) { s.marks = {}; s.marksWiped = true; }
+  if (plus.length) fx.explosion(plus);
+  if (beams.length) fx.sweep(beams);
+  if (washes.length) fx.sed(washes);
   if (s.layer === 'ground' && hit.has(s.player.x + ',' + s.player.y)) hitPlayer('caught in the blast');
 }
 function pendingBlast(): Set<string> {
@@ -433,7 +530,9 @@ function pendingBlast(): Set<string> {
   const set = new Set<string>();
   for (const b of s.bombs) {
     if (b.fuse > 2) continue;
-    for (const [x, y] of blastTiles(b, false, null)) set.add(x + ',' + y);
+    if (b.kind === 'sed') continue; // a sed can't hurt anyone — imps know it
+    const tiles = b.kind === 'grep' ? grepTiles(b) : blastTiles(b, false, null);
+    for (const [x, y] of tiles) set.add(x + ',' + y);
   }
   return set;
 }
@@ -539,7 +638,7 @@ function impTick(e: Enemy): void {
   }
   const cheb = Math.max(Math.abs(p.x - e.x), Math.abs(p.y - e.y));
   if (!e.leash && s.layer === 'ground' && e.sinceBomb >= 6 && cheb <= 4 && neighbors(e).length >= 2 && !bombAt(e.x, e.y)) {
-    s.bombs.push({ x: e.x, y: e.y, fuse: 4, r: 1, soft: false, imp: true });
+    s.bombs.push({ x: e.x, y: e.y, fuse: 4, r: 1, kind: 'bomb', soft: false, imp: true });
     e.sinceBomb = 0;
   }
   const ns = neighbors(e);
@@ -662,7 +761,13 @@ function moveProjectiles(): void {
 }
 
 // ---------- world tick ----------
+// true while @{a} is re-feeding recorded commands through normalKey — the
+// whole replay is ONE enemy turn, so per-command ticks are suppressed
+let macroReplaying = false;
+let macroAborted = false;
+
 function tick(): void {
+  if (macroReplaying) return;
   const s = state();
   if (s.status !== 'play') return;
   s.tick++;
@@ -701,7 +806,48 @@ function bonk(msg?: string): void {
   s.echo = 'E: ' + (msg || 'cannot go there');
   s.bonks++;
   fx.error(msg);
+  if (macroReplaying) macroAborted = true; // vim stops a macro on error
   tick(); // spam is punished
+}
+
+// ---------- macros (docs/motions-v2.md §5) ----------
+// recording start/stop are free annotation; replay = 2 keys, ONE tick total
+function startRecording(ch: string): void {
+  const s = state();
+  if (!(ch.length === 1 && ch >= 'a' && ch <= 'z')) {
+    s.echo = 'E: registers are letters a-z';
+    fx.error();
+    return;
+  }
+  s.recording = { reg: ch, keys: [] };
+  s.echo = 'recording @' + ch + ' — q to stop';
+}
+function stopRecording(): void {
+  const s = state();
+  const r = s.recording!;
+  s.recording = null;
+  s.registers[r.reg] = r.keys;
+  s.echo = 'recorded ' + r.keys.length + ' key' + (r.keys.length === 1 ? '' : 's') + ' into @' + r.reg;
+}
+function replayMacro(ch: string): void {
+  const s = state();
+  const reg = ch === '@' ? s.lastMacro : ch;
+  const keysArr = reg ? s.registers[reg] : undefined;
+  if (!reg || !keysArr || !keysArr.length) {
+    s.echo = 'E: register ' + (reg ?? '@') + ' is empty';
+    fx.error();
+    return;
+  }
+  s.lastMacro = reg;
+  macroReplaying = true;
+  macroAborted = false;
+  for (const rk of keysArr) {
+    if (s.status !== 'play' || s.mode !== 'normal' || macroAborted) break;
+    normalKey(rk);
+  }
+  macroReplaying = false;
+  s.lastCmd = '@' + reg;
+  if (s.status === 'play') tick(); // the single enemy turn
 }
 
 // ---------- motions ----------
@@ -809,6 +955,121 @@ function findMotion(cmd: FindMemo['cmd'], ch: string): void {
   if (!landAt(land, p.y, dir, 0)) bonk('landing blocked');
 }
 
+// ---------- marks (docs/motions-v2.md §1) ----------
+// setting is FREE — annotation, the same class as the `:` prompt
+function setMark(ch: string): void {
+  const s = state();
+  if (!(ch.length === 1 && ch >= 'a' && ch <= 'z')) {
+    s.echo = 'E: mark wants a letter a-z';
+    fx.error();
+    return;
+  }
+  s.marks[ch] = { x: s.player.x, y: s.player.y, layer: s.layer };
+  s.echo = 'mark ' + ch + ' set. the file remembers.';
+}
+// recall is a jump: nothing in between matters, no swept interval, no flips
+function recallMark(ch: string): void {
+  const s = state();
+  const p = s.player;
+  const m = s.marks[ch];
+  if (!m) {
+    bonk(s.marksWiped ? 'the blast moved the line numbers' : 'mark ' + ch + ' not set');
+    return;
+  }
+  if (m.layer !== s.layer) { bonk('mark ' + ch + ' is in another layer'); return; }
+  if (m.x === p.x && m.y === p.y) { bonk('already at mark ' + ch); return; }
+  const g = s.layer === 'sky' ? s.skyGrid! : s.grid;
+  const c = g[m.y] ? g[m.y][m.x] ?? '#' : '#';
+  if (SOLID[c] || c === '~' || ONEWAY[c]) { bonk('mark ' + ch + ' is unreachable now'); return; }
+  const ground = s.layer === 'ground';
+  if (ground && bombAt(m.x, m.y)) { bonk('something is sitting on mark ' + ch); return; }
+  const foe = ground ? enemyAt(m.x, m.y) : undefined;
+  if (foe && !flippedToad(foe)) { bonk('something is sitting on mark ' + ch); return; }
+  if (foe) squashToad(foe);
+  p.x = m.x;
+  p.y = m.y;
+  enterTile();
+  fx.moved();
+  if (s.status === 'play') tick();
+}
+
+// ---------- % — jump to the matching bracket (docs/motions-v2.md §2) ----------
+// jump semantics like mark recall: only the destination matters; a bomb on
+// YOUR bracket doesn't block the exit — that's the Trapdoor
+function matchJump(): void {
+  const s = state();
+  const p = s.player;
+  const partner = s.pairs[s.layer + ':' + p.x + ',' + p.y];
+  if (!partner) { bonk('no matching bracket here'); return; }
+  const [px, py] = partner.split(',').map(Number);
+  const ground = s.layer === 'ground';
+  if (ground && bombAt(px, py)) { bonk('the matching bracket is occupied'); return; }
+  const foe = ground ? enemyAt(px, py) : undefined;
+  if (foe && !flippedToad(foe)) { bonk('the matching bracket is occupied'); return; }
+  if (foe) squashToad(foe);
+  p.x = px;
+  p.y = py;
+  s.lastCmd = '%';
+  enterTile();
+  fx.moved();
+  if (s.status === 'play') tick();
+}
+
+// ---------- /{word} + n — search across the file (docs/motions-v2.md §4) ----------
+// horizontal letter runs on every row of the player's layer — the same word
+// rule w/b/e use, lifted from one row to the whole grid
+function gridWordStarts(word: string): Array<[number, number]> {
+  const s = state();
+  const g = s.layer === 'sky' ? s.skyGrid! : s.grid;
+  const out: Array<[number, number]> = [];
+  for (let y = 0; y < s.H; y++) {
+    let run = '';
+    let start = 0;
+    for (let x = 0; x <= s.W; x++) {
+      const lt = x < s.W && isLetter(g[y][x] ?? '#');
+      if (lt && !run) start = x;
+      if (lt) run += g[y][x];
+      else {
+        if (run === word) out.push([start, y]); // whole-word matches only
+        run = '';
+      }
+    }
+  }
+  return out;
+}
+function doSearch(word: string): void {
+  const s = state();
+  const p = s.player;
+  if (!word) {
+    // bare `/` Enter repeats the last search, like vim
+    if (!s.lastSearch) { s.echo = 'E: empty pattern'; fx.error(); return; }
+    word = s.lastSearch;
+  }
+  s.lastSearch = word;
+  const hits = gridWordStarts(word);
+  if (!hits.length) { bonk('pattern not found: ' + word); return; }
+  // row-major from just past the player, wrapping — deterministic, learnable
+  const after = hits.filter(([x, y]) => y > p.y || (y === p.y && x > p.x));
+  const before = hits.filter(([x, y]) => !(y > p.y || (y === p.y && x > p.x)));
+  const ground = s.layer === 'ground';
+  for (const [x, y] of [...after, ...before]) {
+    if (x === p.x && y === p.y) continue;
+    // an occupied landing is skipped, not fatal — the chain routes around
+    if (ground && bombAt(x, y)) continue;
+    const foe = ground ? enemyAt(x, y) : undefined;
+    if (foe && !flippedToad(foe)) continue;
+    if (foe) squashToad(foe);
+    p.x = x;
+    p.y = y;
+    s.lastCmd = '/' + word;
+    enterTile();
+    fx.moved();
+    if (s.status === 'play') tick();
+    return;
+  }
+  bonk('every "' + word + '" is spoken for');
+}
+
 // ---------- layer motions (the sky) ----------
 function riseToSky(): void {
   const s = state();
@@ -846,17 +1107,49 @@ function termAtPlayer(): Terminal | undefined {
   if (s.layer !== 'ground') return undefined;
   return s.terminals[s.player.x + ',' + s.player.y];
 }
+const isCoinKind = (t: Terminal): boolean => t.kind === 'coins' || t.kind === 'spark';
+
+/** Where the spark terminal's scan head sits for a given session clock. */
+export function sparkPos(t: Terminal, T: TermSession): number {
+  const len = t.buffer.length;
+  if (!len) return 0;
+  // starts mid-buffer so entering at cursor 0 is never an instant collision
+  return (T.ticks + (t.broken.length >> 1)) % len;
+}
+
+function termGoalMet(t: Terminal): boolean {
+  if (t.kind === 'clean') return !t.buffer.includes(t.glitch);
+  if (isCoinKind(t)) return !t.buffer.includes(t.coin);
+  return t.buffer.join('') === t.target;
+}
 function termValidate(t: Terminal): boolean {
   const s = state();
-  if (t.buffer.join('') === t.target) {
+  if (termGoalMet(t)) {
     t.solved = true;
-    s.player.bombs = Math.min(3, s.player.bombs + t.grants);
+    grantBombs(t.arms, t.grants);
     s.mode = 'normal'; s.term = null;
-    s.echo = '"' + t.target + '" — armed! +' + t.grants + ' bomb' + (t.grants > 1 ? 's' : '');
+    const label = t.kind === 'clean' ? 'lint purged'
+      : t.kind === 'coins' ? 'cache grabbed'
+      : t.kind === 'spark' ? 'cache grabbed under the scanner'
+      : t.kind === 'golf' ? '"' + t.target + '" under budget'
+      : '"' + t.target + '"';
+    s.echo = label + ' — armed! +' + t.grants + ' bomb' + (t.grants > 1 ? 's' : '');
     fx.solved(t);
     return true;
   }
   return false;
+}
+// put a timed/budgeted tile back to its authored state (session clocks too)
+function termRewind(t: Terminal, T: TermSession, msg: string): void {
+  const s = state();
+  t.buffer = t.broken.split('');
+  t.cursor = 0;
+  T.insert = false;
+  T.pending = { count: '', op: null };
+  T.ticks = 0;
+  T.used = 0;
+  s.echo = 'E: ' + msg;
+  fx.termReset(t);
 }
 function wordSpan(t: Terminal): [number, number] {
   // word under cursor: letters/digits run
@@ -868,25 +1161,78 @@ function wordSpan(t: Terminal): [number, number] {
   while (e < t.buffer.length - 1 && isW(t.buffer[e + 1])) e++;
   return [s, e];
 }
+// words inside the buffer = runs of [a-zA-Z0-9], same rule as wordSpan
+function bufWords(t: Terminal): Array<[number, number]> {
+  const isW = (c: string) => /[a-zA-Z0-9]/.test(c);
+  const out: Array<[number, number]> = [];
+  let start = -1;
+  for (let i = 0; i <= t.buffer.length; i++) {
+    const w = i < t.buffer.length && isW(t.buffer[i]);
+    if (w && start < 0) start = i;
+    if (!w && start >= 0) { out.push([start, i - 1]); start = -1; }
+  }
+  return out;
+}
+
 function termKey(k: string): void {
   const s = state();
   const T = s.term!;
   const t = T.t;
-  const done = () => { if (!termValidate(t)) tick(); };
+  T.used++;
+  termKeyInner(k, s, T, t);
+  // golf: the budget counts every keypress in the tile; going over resets it
+  if (s.mode === 'terminal' && s.term === T && !t.solved
+      && t.kind === 'golf' && T.used >= t.strokes && !termGoalMet(t)) {
+    termRewind(t, T, 'over budget — the tile reset');
+  }
+}
+
+// true while `.` is re-feeding a recorded edit through termKeyInner — the
+// replay must cost exactly one tick, so per-key afters are suppressed
+let replaying = false;
+
+function termKeyInner(k: string, s: GameState, T: TermSession, t: Terminal): void {
+  // runs after every completed command: coin pickup, win check, world tick,
+  // then the session hazards (scan head, respawn clock)
+  const after = (validate: boolean) => {
+    if (replaying) return;
+    if (isCoinKind(t) && t.buffer[t.cursor] === t.coin) {
+      t.buffer[t.cursor] = '·';
+      fx.coin(t.buffer.filter((c) => c === t.coin).length);
+    }
+    if ((validate || isCoinKind(t)) && termValidate(t)) return;
+    T.ticks++; // before tick() so the fx.tick repaint shows a fresh clock
+    tick();
+    if (s.status !== 'play' || s.mode !== 'terminal') return;
+    if (t.kind === 'spark' && sparkPos(t, T) === t.cursor) {
+      termRewind(t, T, 'zapped by the scan head — tile reset');
+      s.mode = 'normal'; s.term = null;
+      fx.exitTerm();
+      return;
+    }
+    if (isCoinKind(t) && T.ticks >= t.deadline && t.buffer.includes(t.coin)) {
+      termRewind(t, T, 'too slow — the cache respawned');
+    }
+  };
+  const done = () => after(true);
   if (T.insert) {
     if (k === 'Escape') {
       T.insert = false;
       t.cursor = Math.max(0, t.cursor - 1);
-      if (!termValidate(t)) tick();
+      // the whole insert-class edit (opener + typing) commits as one dot unit
+      if (T.rec) { s.lastEdit = { keys: [...T.rec, 'Escape'] }; T.rec = null; }
+      after(true);
       return;
     }
     if (k === 'Backspace') {
       if (t.cursor > 0) { t.buffer.splice(t.cursor - 1, 1); t.cursor--; }
-      tick(); return;
+      T.rec?.push(k);
+      after(false); return;
     }
     if (k.length === 1) {
       t.buffer.splice(t.cursor, 0, k); t.cursor++;
-      tick(); return;
+      T.rec?.push(k);
+      after(false); return;
     }
     return;
   }
@@ -894,7 +1240,30 @@ function termKey(k: string): void {
   const P = T.pending;
   if (P.op === 'r') {
     P.op = null;
-    if (k.length === 1) { if (t.buffer.length) t.buffer[t.cursor] = k; s.lastCmd = 'r' + k; done(); }
+    if (k.length === 1) {
+      if (t.buffer.length) t.buffer[t.cursor] = k;
+      s.lastCmd = 'r' + k;
+      s.lastEdit = { keys: ['r', k] };
+      done();
+    }
+    return;
+  }
+  const doFind = (cmd: 'f' | 'F', ch: string): void => {
+    const dir = cmd === 'f' ? 1 : -1;
+    let hit = -1;
+    for (let i = t.cursor + dir; i >= 0 && i < t.buffer.length; i += dir) {
+      if (t.buffer[i] === ch) { hit = i; break; }
+    }
+    if (hit < 0) { s.echo = 'E: no "' + ch + '" that way'; fx.error(); return; }
+    T.find = { cmd, ch };
+    t.cursor = hit;
+    s.lastCmd = cmd + ch;
+    done();
+  };
+  if (P.op === 'f' || P.op === 'F') {
+    const cmd = P.op as 'f' | 'F';
+    P.op = null;
+    if (k.length === 1) doFind(cmd, k);
     return;
   }
   if (P.op === 'c') {
@@ -903,7 +1272,8 @@ function termKey(k: string): void {
       const end = Math.max(t.cursor, e);
       t.buffer.splice(t.cursor, end - t.cursor + 1);
       T.insert = true; P.op = null; s.lastCmd = 'cw';
-      tick(); return;
+      T.rec = ['c', 'w'];
+      after(false); return;
     }
     if (k === 'i') { P.op = 'ci'; return; }
     P.op = null; s.echo = 'E: c needs w or iw'; fx.error(); return;
@@ -914,20 +1284,44 @@ function termKey(k: string): void {
       const [ws, we] = wordSpan(t);
       if (we >= ws) { t.buffer.splice(ws, we - ws + 1); t.cursor = Math.min(ws, Math.max(0, t.buffer.length)); }
       T.insert = true; s.lastCmd = 'ciw';
-      tick(); return;
+      T.rec = ['c', 'i', 'w'];
+      after(false); return;
     }
     s.echo = 'E: ci needs w'; fx.error(); return;
   }
   if ((k >= '1' && k <= '9') || (k === '0' && P.count)) { P.count += k; return; }
+  const cnt = P.count;
   const n = Math.max(1, parseInt(P.count || '1', 10));
   P.count = '';
   const clamp = () => { t.cursor = Math.max(0, Math.min(t.buffer.length - 1, t.cursor)); };
   switch (k) {
-    case 'h': t.cursor -= n; clamp(); tick(); break;
-    case 'l': t.cursor += n; clamp(); tick(); break;
-    case '0': t.cursor = 0; tick(); break;
-    case '$': t.cursor = Math.max(0, t.buffer.length - 1); tick(); break;
-    case 'x': t.buffer.splice(t.cursor, n); clamp(); s.lastCmd = 'x'; done(); break;
+    case 'h': t.cursor -= n; clamp(); after(true); break;
+    case 'l': t.cursor += n; clamp(); after(true); break;
+    case '0': t.cursor = 0; after(true); break;
+    case '$': t.cursor = Math.max(0, t.buffer.length - 1); after(true); break;
+    case 'f': case 'F': P.op = k; break;
+    case ';':
+      if (T.find) doFind(T.find.cmd as 'f' | 'F', T.find.ch);
+      else { s.echo = 'E: no find to repeat'; fx.error(); }
+      break;
+    case 'w': case 'b': case 'e': {
+      const words = bufWords(t);
+      let cx = t.cursor;
+      let hit: number | null = 0;
+      for (let i = 0; i < n && hit !== null; i++) {
+        hit = null;
+        if (k === 'w') { for (const [ws] of words) if (ws > cx) { hit = ws; break; } }
+        else if (k === 'e') { for (const [, we] of words) if (we > cx) { hit = we; break; } }
+        else { for (let j = words.length - 1; j >= 0; j--) if (words[j][0] < cx) { hit = words[j][0]; break; } }
+        if (hit !== null) cx = hit;
+      }
+      if (hit === null) { s.echo = 'E: no word to hop to'; fx.error(); break; }
+      t.cursor = cx; s.lastCmd = k; after(true); break;
+    }
+    case 'x':
+      t.buffer.splice(t.cursor, n); clamp(); s.lastCmd = 'x';
+      s.lastEdit = { keys: [...cnt.split(''), 'x'] };
+      done(); break;
     case 'r': P.op = 'r'; break;
     case '~': {
       for (let i = 0; i < n && t.cursor < t.buffer.length; i++) {
@@ -935,15 +1329,30 @@ function termKey(k: string): void {
         t.buffer[t.cursor] = c === c.toLowerCase() ? c.toUpperCase() : c.toLowerCase();
         if (t.cursor < t.buffer.length - 1) t.cursor++;
       }
-      s.lastCmd = '~'; done(); break;
+      s.lastCmd = '~';
+      s.lastEdit = { keys: [...cnt.split(''), '~'] };
+      done(); break;
     }
-    case 's': t.buffer.splice(t.cursor, 1); T.insert = true; s.lastCmd = 's'; tick(); break;
+    case 's': t.buffer.splice(t.cursor, 1); T.insert = true; s.lastCmd = 's'; T.rec = ['s']; after(false); break;
     case 'c': P.op = 'c'; break;
-    case 'i': T.insert = true; tick(); break;
-    case 'a': t.cursor = Math.min(t.buffer.length, t.cursor + 1); T.insert = true; tick(); break;
-    case 'A': t.cursor = t.buffer.length; T.insert = true; tick(); break;
+    case 'i': T.insert = true; T.rec = ['i']; after(false); break;
+    case 'a': t.cursor = Math.min(t.buffer.length, t.cursor + 1); T.insert = true; T.rec = ['a']; after(false); break;
+    case 'A': t.cursor = t.buffer.length; T.insert = true; T.rec = ['A']; after(false); break;
+    case '.': {
+      // the dot formula (docs/motions-v2.md §3): replay the last completed
+      // edit at the cursor for ONE key and ONE tick, whatever its length
+      if (!s.lastEdit) { s.echo = 'E: nothing to repeat'; fx.error(); break; }
+      replaying = true;
+      for (const rk of s.lastEdit.keys) termKeyInner(rk, s, T, t);
+      replaying = false;
+      s.lastCmd = '.';
+      done(); break;
+    }
     case 'u': worldUndo(); break;
-    case 'Escape': s.mode = 'normal'; s.term = null; fx.exitTerm(); break;
+    case 'Escape':
+      // walking out on a timed cache puts the coins back — no cheesing the clock
+      if (isCoinKind(t) && !t.solved) { t.buffer = t.broken.split(''); t.cursor = 0; }
+      s.mode = 'normal'; s.term = null; fx.exitTerm(); break;
     default:
       s.echo = 'E: not an edit command'; fx.error();
   }
@@ -959,6 +1368,23 @@ export function key(k: string): void {
   }
   if (s.status !== 'play') return;
 
+  // the open search prompt swallows keys: typing is free thinking; Enter
+  // executes for 1 key + 1 tick; Escape abandons (the opening / is spent)
+  if (s.mode === 'normal' && s.searchBuf !== null) {
+    if (k === 'Escape') { s.searchBuf = null; s.echo = ''; return; }
+    if (k === 'Enter') {
+      const word = s.searchBuf;
+      s.searchBuf = null;
+      s.keys++;
+      doSearch(word);
+      if (s.status === 'play' && s.keys >= s.limit) { s.status = 'fail'; fx.fail(); }
+      return;
+    }
+    if (k === 'Backspace') { s.searchBuf = s.searchBuf.slice(0, -1); s.echo = '/' + s.searchBuf; return; }
+    if (k.length === 1) { s.searchBuf += k; s.echo = '/' + s.searchBuf; }
+    return;
+  }
+
   // Escape with nothing pending = pause request (free)
   if (k === 'Escape' && s.mode === 'normal' && !s.pending.count && !s.pending.op) {
     fx.wantPause(); return;
@@ -971,6 +1397,42 @@ export function key(k: string): void {
     s.echo = LOCKED_ECHO[lg](k);
     fx.locked(k);
     return;
+  }
+
+  // mark-set and macro record/stop are free annotation (docs/motions-v2.md):
+  // they change nothing in the world — recall/replay pay full fare
+  if (s.mode === 'normal') {
+    if (s.pending.op === 'm') {
+      s.pending.op = null;
+      if (k !== 'Escape') setMark(k);
+      return;
+    }
+    if (s.pending.op === 'q') {
+      s.pending.op = null;
+      if (k !== 'Escape') startRecording(k);
+      return;
+    }
+    if (k === 'm' && !s.pending.op) {
+      s.pending.count = '';
+      s.pending.op = 'm';
+      return;
+    }
+    if (k === 'q' && !s.pending.op) {
+      if (s.recording) { stopRecording(); return; }
+      s.pending.count = '';
+      s.pending.op = 'q';
+      return;
+    }
+    // recording captures every world command as pressed; the keys that
+    // can't replay coherently are refused (macros are pure motion)
+    if (s.recording) {
+      if (k === 'i' || k === '/' || k === 'u' || k === '@') {
+        s.echo = "E: that won't record. macros are pure motion.";
+        fx.error();
+        return;
+      }
+      s.recording.keys.push(k);
+    }
   }
 
   s.keys++;
@@ -999,6 +1461,18 @@ function normalKey(k: string): void {
     const op = P.op as FindMemo['cmd'];
     P.op = null; P.count = '';
     if (k.length === 1) { s.lastCmd = op + k; note(op); findMotion(op, k); }
+    return;
+  }
+  if (P.op === '`') {
+    P.op = null; P.count = '';
+    if (k.length === 1 && k >= 'a' && k <= 'z') { s.lastCmd = '`' + k; note('`'); recallMark(k); }
+    else if (k !== 'Escape') { s.echo = 'E: mark wants a letter a-z'; fx.error(); }
+    return;
+  }
+  if (P.op === '@') {
+    P.op = null; P.count = '';
+    if (k === '@' || (k.length === 1 && k >= 'a' && k <= 'z')) { note('@'); replayMacro(k); }
+    else if (k !== 'Escape') { s.echo = 'E: registers are letters a-z'; fx.error(); }
     return;
   }
   if (k === 'Escape') { P.count = ''; P.op = null; s.echo = ''; return; }
@@ -1040,6 +1514,15 @@ function normalKey(k: string): void {
       } else { s.echo = 'E: no find to repeat'; fx.error(); }
       break;
     }
+    case '`': P.count = ''; P.op = '`'; break;
+    case '@': P.count = ''; P.op = '@'; break;
+    case '%': note('%'); matchJump(); break;
+    case '.': note('.'); bonk('nothing to repeat. move with motions, repeat with edits'); break;
+    case '/': P.count = ''; s.searchBuf = ''; s.echo = '/'; break;
+    case 'n':
+      if (s.lastSearch) { note('n'); doSearch(s.lastSearch); }
+      else { s.echo = 'E: no search to repeat'; fx.error(); } // free, like ;
+      break;
     case 'x': note('x'); dropBomb(); break;
     case 'u': note('u'); worldUndo(); break;
     case '<C-u>': note('^U'); riseToSky(); break;
@@ -1049,7 +1532,7 @@ function normalKey(k: string): void {
       if (t && !t.solved) {
         note('i');
         s.mode = 'terminal';
-        s.term = { t, insert: false, pending: { count: '', op: null } };
+        s.term = { t, insert: false, pending: { count: '', op: null }, ticks: 0, used: 0, find: null };
         fx.enterTerm(t);
         tick();
       } else bonk(t ? 'already fixed' : 'nothing to edit here — find a T tile');

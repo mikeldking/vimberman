@@ -19,10 +19,13 @@ describe('ui smoke', () => {
     expect(dom.els.panel.innerHTML).toContain('PLAY');
   });
 
-  it('navigates title -> select -> intro -> game with vim keys', () => {
+  it('navigates title -> select -> chapter -> intro -> game with vim keys', () => {
     dom.key('j'); dom.key('k'); dom.key('Enter');
     expect(dom.els.panel.innerHTML).toContain('SELECT LEVEL');
     expect(dom.els.panel.innerHTML).toContain('LOCKED');
+    dom.key('Enter');
+    // first entry into a chapter level shows its story card once, ever
+    expect(dom.els.panel.innerHTML).toContain('CHAPTER ONE');
     dom.key('Enter');
     expect(dom.els.panel.innerHTML).toContain('LEVEL 01');
     dom.key('Enter');
@@ -56,6 +59,16 @@ describe('ui smoke', () => {
     dom.key('Escape');
   });
 
+  it('never re-shows a chapter card on replay', () => {
+    // back at SELECT; cursor sits on level 2 — step up to level 1 and re-enter
+    dom.key('k'); dom.key('Enter');
+    expect(dom.els.panel.innerHTML).not.toContain('CHAPTER ONE');
+    expect(dom.els.panel.innerHTML).toContain('LEVEL 01');
+    const saved = JSON.parse(dom.store['vimberman.save.v1']);
+    expect(saved.chapters).toContain(1);
+    dom.key('Escape');
+  });
+
   it('locked motions are free and refused until their keycap is collected', () => {
     game.loadLevel(3); // level 4 teaches `i`; a fresh save hasn't collected it
     dom.els.overlay.classList.add('hidden');
@@ -78,5 +91,26 @@ describe('ui smoke', () => {
     dom.frames(2);
     expect(game.state().player.bombs).toBe(1);
     expect(game.state().mode).toBe('normal');
+  });
+
+  it('renders each minigame goal line in the termbox', () => {
+    // [level idx, tile x, tile y, goal text the overlay must show]
+    const tiles: Array<[number, number, number, string]> = [
+      [5, 7, 5, 'purge every'],       // clean
+      [7, 1, 5, 'land on every'],     // coins
+      [10, 12, 9, 'stroke'],          // golf
+      [15, 5, 7, 'scan head'],        // spark (the finale — index moves as levels land before it)
+    ];
+    for (const [idx, x, y, text] of tiles) {
+      game.loadLevel(idx);
+      dom.els.overlay.classList.add('hidden');
+      const st = game.state();
+      st.player.x = x; st.player.y = y; // stand on the tile directly
+      game.key('i');
+      dom.frames(1);
+      expect(game.state().mode).toBe('terminal');
+      expect(dom.els.termbox.innerHTML).toContain(text);
+      game.key('Escape');
+    }
   });
 });

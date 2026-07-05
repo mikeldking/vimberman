@@ -76,6 +76,10 @@ tuned per level.
 | `i` | On a code-tile (`T`), opens the terminal editor. Elsewhere, a no-op error. | `normalKey` case `i` |
 | `x` | In the world: drops an armed bomb. In a code-tile: deletes a character. | `dropBomb` / `termKey` |
 | `u` | Rewinds one world tick (see Undo below). Also the death-rescue key. | `worldUndo` / `rescue` |
+| `m{a}` / `` `{a} `` | Set a bookmark (free — annotation, no key/tick) / teleport back to it (1 tick; jumps over everything; blocked only by an occupied or unreachable target). Explosions erase all marks, like undo history. Full spec: `docs/motions-v2.md`. | `setMark` / `recallMark` |
+| `%` | On a bracket tile `()[]{}`: jump to its partner (1 key, 1 tick, both directions). Only the destination matters — a bomb on your own bracket doesn't block the exit. Pairs validated 0-or-2 per kind at load. | `matchJump` |
+| `/{word}` `n` | Search: fly to a whole-word match anywhere on your layer, row-major from the player, wrapping. Prompt typing is free; `/`+Enter cost a key each, execution 1 tick; `n` repeats for 1 key + 1 tick. Occupied landings are skipped. The only motion that crosses rows. | `doSearch` |
+| `q{a}…q` / `@{a}` | Record world commands (recording free; commands cost normally) / replay the whole register as ONE enemy turn (2 keys, 1 tick). Bonks abort the replay; `i` `/` `u` refuse to record; `@@` re-runs. One `u` rewinds an entire replay. | `replayMacro` |
 | `Ctrl-u` / `Ctrl-d` | On an updraft `@`: rise to the sky layer / drop back to clear ground. | `riseToSky` / `dropToGround` |
 | `:` | Opens the free ex command line (UI-side; the engine never sees it). | `src/ui/screens.ts` → `exKey` |
 
@@ -129,30 +133,59 @@ Bombs are not found lying around. The only way to gain one is:
    (almost always the literal string `"bomb"`).
 4. On a correct match, `termValidate` auto-commits: the terminal closes,
    you're granted `t.grants` bombs (1 or 2, capped at 3 held at once), and
-   a satisfying two-note chime plays.
-5. Back in the world, press `x` to drop a bomb: fuse of 6 ticks, blast
-   radius `p.radius` (starts at 2), plus-shaped (`blastTiles`).
+   a satisfying two-note chime plays. **The word you craft selects the
+   weapon** (`docs/arsenal.md`): the tile's `arms` kind (default: the
+   target word if it names a kind) is pushed onto a typed FIFO arsenal —
+   craft order is drop order.
+5. Back in the world, press `x` to drop the front of the queue. The
+   classic `bomb`: fuse of 6 ticks, blast radius `p.radius` (starts
+   at 2), plus-shaped (`blastTiles`). The `grep` line bomb: same fuse,
+   but detonation sweeps its whole row exactly like a linter beam
+   (`grepTiles`) — kills occupants, breaks no terrain, spares margins,
+   and never detonates other bombs (though a plus-blast will detonate a
+   placed grep). Imps flee a pending grep's row. The `sed` terraformer:
+   same fuse and plus shape, but a substitution, not a fire — digs soft
+   rock and opens bushes, never cracks hard rock `&`, kills nothing
+   (stand on it if you like), triggers nothing, and imps don't fear it.
 
 Blast propagation stops at walls, destroys soft rock unconditionally,
 destroys hard rock only at radius ≥ 3, opens bushes into their hidden item,
 and **chains into other bombs** it touches (`explode`'s `chainQ`) — so
 bombs can be used to detonate each other, including enemy-planted ones.
 
-### The terminal editor (bomb-crafting minigame)
+### The terminal editor (bomb-crafting minigames)
 
 This is a scoped-down vim inside the vim game — its own mode
 (`st.mode === 'terminal'`), its own pending-key state, and its own subset
 of commands (`termKey` in `src/engine/engine.ts`):
 
-- Movement: `h` `l` `0` `$` (no `j`/`k` — it's a single line buffer).
+- Movement: `h` `l` `0` `$`, plus `f{c}`/`F{c}`/`;` char-finds and
+  `w`/`b`/`e` word hops within the buffer (no `j`/`k` — it's a single
+  line buffer). The extra motions share the world's keycap gating.
 - Edits: `x` (delete char), `r{c}` (replace char), `~` (toggle case),
   `s` (substitute char + enter insert), `i`/`a`/`A` (enter insert at
   cursor / after cursor / at end).
 - Word ops: `cw` (change to word end), `ciw` (change the whole word under
   the cursor, from anywhere inside it) — these are the level 6 and
   level 9 teaching moments respectively.
+- `.` (dot, keycap-gated): replays the last completed edit at the cursor
+  for ONE keystroke and one tick, whatever the edit's length — `ciw bomb
+  Esc` on tile A becomes `i` `.` on tile B. Edit memory persists across
+  terminals and explosions within a level; it is also a single stroke for
+  golf budgets. In the world, `.` is a bonk with a lesson. Spec:
+  `docs/motions-v2.md` §3.
 - `Escape` from insert commits the current buffer and re-validates.
 - `u` even works *inside* the terminal (falls through to `worldUndo`).
+
+"Make it say the target" is only the first of several terminal
+minigames. A tile's `TerminalDef.kind` selects the puzzle: `fix`
+(default, buffer → target), `clean` (purge every glitch char), `coins`
+(land on every coin before a tick deadline or the cache respawns),
+`golf` (fix it within a hard keystroke budget or the tile resets), and
+`spark` (coins plus a scan head sweeping one cell per tick — end a
+stroke under it and you're ejected). All are turn-based, all pay out in
+bombs, and each drills a motion family. Full specs, authoring guide and
+tuning rules: `docs/terminal-minigames.md`.
 
 Every keypress inside the terminal still calls `tick()` — **fixing a bomb
 costs keystroke budget and gives enemies free turns**, exactly like moving

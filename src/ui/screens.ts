@@ -2,10 +2,12 @@
 // and all keyboard routing. Menus are navigated with vim keys, of course.
 import * as game from '../engine/engine';
 import { resetEffects, sizeCanvas } from '../render/renderer';
+import { armIdle, stopAttract } from './attract';
 import { snd } from './audio';
 import { slMode } from './hud';
 import { persist, resetProgress, save } from './save';
 import { ui } from './state';
+import { CHAPTERS, LEGACY_DEAD, LEGACY_FAIL, type Chapter } from './story';
 import { updateTermbox } from './termbox';
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -63,18 +65,40 @@ export function toast(msg: string, key?: string): void {
 }
 
 // ---------- screens ----------
+function titleItems(): Array<{ label: string; act: () => void }> {
+  const items: Array<{ label: string; act: () => void }> = [];
+  if (save.unlocked > 1) {
+    const next = Math.min(save.unlocked, game.getLevels().length);
+    items.push({ label: 'CONTINUE', act: () => showIntro(next) });
+  }
+  items.push({ label: 'PLAY', act: showSelect });
+  items.push({ label: 'HOW TO PLAY', act: () => showHelp() });
+  items.push({ label: 'SETTINGS', act: showSettings });
+  return items;
+}
 export function showTitle(): void {
-  ui.screen = 'TITLE'; menuIdx = 0; menuLen = 3;
+  menuIdx = 0;
+  renderTitle();
+  armIdle(); // idle long enough and the game starts playing itself
+}
+function renderTitle(): void {
+  ui.screen = 'TITLE';
+  const items = titleItems();
+  menuLen = items.length;
   slMode('MENU');
+  const total = game.getLevels().length;
+  const cleared = Object.keys(save.levels).length;
+  const stars = Object.values(save.levels).reduce((a, r) => a + r.stars, 0);
+  const progress = cleared
+    ? `<div class="dim" style="margin-bottom:10px"><span class="stars">★</span> ${stars}/${total * 3} · ${cleared}/${total} levels refactored</div>`
+    : '';
   show(`<div class="logo">${LOGO}</div>
     <div class="dim" style="margin-bottom:12px">bombs · zombies · and the world's most portable skill</div>
-    ${menuHtml([{ label: 'PLAY' }, { label: 'HOW TO PLAY' }, { label: 'SETTINGS' }], menuIdx)}
+    ${progress}${menuHtml(items, menuIdx)}
     <div class="foot">j/k move · Enter select — yes, the menus are vim too</div>`);
 }
 function titlePick(): void {
-  if (menuIdx === 0) showSelect();
-  else if (menuIdx === 1) showHelp();
-  else showSettings();
+  titleItems()[menuIdx].act();
 }
 
 function showSelect(): void {
@@ -110,6 +134,11 @@ function showHelp(back?: () => void): void {
     ['0 $', 'slide to start / end of row — and snap to linter margins |'],
     ['gg G', 'slam to top / bottom of column'],
     ['^U ^D', 'ride an updraft @ into the clouds / drop back down'],
+    ['m{a} `{a}', 'drop a bookmark (free) / jump back to it — blasts eat marks'],
+    ['%', 'on a bracket ()[]{}: jump to its partner, both directions'],
+    ['/word n', 'search: fly to the word, anywhere; n rides to the next match'],
+    ['.', 'in a code-tile: repeat your last edit — one key, however long'],
+    ['q{a}…q @{a}', 'record world commands / replay them all as ONE turn'],
     ['i', 'open the code-tile under you (INSERT the fix, Esc to commit)'],
     ['x r{c} ~ s', 'in a code-tile: delete char, replace char, flip case, substitute'],
     ['cw ciw', 'in a code-tile: change word / change inner word'],
@@ -124,19 +153,41 @@ function showHelp(back?: () => void): void {
     <div class="foot">every keypress spends budget — enemies move when you do · flying over a toad flips it · Esc back</div>`);
 }
 
+/** apply the CRT-effects setting to the shell (also called once at boot) */
+export function applyCrt(): void {
+  $('crt').classList.toggle('no-crt', !save.settings.crt);
+}
+
 function showSettings(): void {
-  ui.screen = 'SETTINGS'; menuIdx = 0; menuLen = 2; confirmReset = false;
+  ui.screen = 'SETTINGS'; menuIdx = 0; menuLen = 3; confirmReset = false;
   slMode('MENU');
   renderSettings();
 }
 function renderSettings(): void {
   show(`<h2>SETTINGS</h2>${menuHtml([
     { label: `Sound        [${save.settings.sound ? 'ON ' : 'OFF'}]` },
+    { label: `CRT effects  [${save.settings.crt ? 'ON ' : 'OFF'}]` },
     { label: confirmReset ? 'Reset progress — press y to confirm' : 'Reset progress' },
   ], menuIdx)}<div class="foot">Enter toggle/select · Esc back</div>`);
 }
 
+// the story interleaves here: a chapter card runs once per save, ahead of
+// the level intro, on every entry path (select, CONTINUE, clear-advance)
+let chapterLevel = 0; // where to resume after the card is dismissed
+function showChapter(ch: Chapter): void {
+  ui.screen = 'CHAPTER';
+  chapterLevel = ch.level;
+  save.chapters.push(ch.level);
+  persist();
+  slMode('MENU');
+  show(`<h2>${ch.title}</h2>
+    ${ch.lines.map((l) => `<div class="dim">${l}</div>`).join('')}
+    <div class="foot">Enter continue</div>`);
+}
+
 export function showIntro(n: number): void {
+  const ch = CHAPTERS.find((c) => c.level === n);
+  if (ch && !save.chapters.includes(n)) { showChapter(ch); return; }
   ui.screen = 'INTRO';
   if (n !== ui.currentLevel) { deathsBy = {}; failsThisLevel = 0; }
   ui.currentLevel = n;
@@ -157,6 +208,13 @@ export function startLevel(n: number): void {
   resetEffects();
   hide();
   updateTermbox();
+}
+
+// The Legacy gets one lowercase comment per FAIL/DEAD card — rotated by the
+// session fail count (deterministic), below the mechanical lesson, and never
+// on CLEAR (docs/story.md: winning shuts it up)
+function legacySays(lines: string[]): string {
+  return `<div class="dim" style="margin-top:10px">${lines[failsThisLevel % lines.length]}</div>`;
 }
 
 // after 3 fails/deaths on a level this session, the reference line leaks out
@@ -231,6 +289,7 @@ export function showDead(msg: string): void {
     <div>@ was ${msg}.</div>
     ${lesson}${ghostOfPar()}
     ${canU ? `<div style="margin-top:8px">Press <span class="kbd">u</span> to undo fate — ${st.player.undo} charge${st.player.undo > 1 ? 's' : ''} left.</div>` : '<div class="dim" style="margin-top:8px">No undo can save you now.</div>'}
+    ${legacySays(LEGACY_DEAD)}
     <div class="foot">${canU ? 'u rewind · ' : ''}r retry · Esc menu</div>`);
 }
 
@@ -243,6 +302,7 @@ export function showFail(): void {
     <div>The budget of ${st.limit} is spent. The cursor grows still.</div>
     <div class="dim" style="margin-top:8px">Tip: ${st.lv.teaches} — big motions cost one keystroke-ish, not ten.</div>
     ${ghostOfPar()}
+    ${legacySays(LEGACY_FAIL)}
     <div class="foot">r retry · Esc menu</div>`);
 }
 
@@ -382,6 +442,7 @@ function gameKey(k: string): void {
 }
 
 export function handleKeydown(e: KeyboardEvent): void {
+  stopAttract(); // any keypress reclaims the keyboard from the demo
   // Ctrl-u / Ctrl-d are real inputs (the sky layer); other chords pass through
   if (e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'u' || e.key === 'd')) {
     if (ui.screen === 'GAME') {
@@ -403,7 +464,7 @@ export function handleKeydown(e: KeyboardEvent): void {
   if (k.length === 1 || k === 'Escape' || k === 'Backspace' || k === 'Enter') e.preventDefault();
 
   switch (ui.screen) {
-    case 'TITLE': menuNav(k, showTitle, titlePick, null); break;
+    case 'TITLE': menuNav(k, renderTitle, titlePick, null); break;
     case 'SELECT':
       menuNav(k, renderSelect, () => {
         if (menuIdx + 1 > save.unlocked) { snd.error(); toast('locked — clear the previous level'); return; }
@@ -429,9 +490,13 @@ export function handleKeydown(e: KeyboardEvent): void {
       confirmReset = false;
       menuNav(k, renderSettings, () => {
         if (menuIdx === 0) { save.settings.sound = !save.settings.sound; persist(); snd.item(); }
+        else if (menuIdx === 1) { save.settings.crt = !save.settings.crt; persist(); applyCrt(); snd.item(); }
         else confirmReset = true;
         renderSettings();
       }, showTitle);
+      break;
+    case 'CHAPTER':
+      if (k === 'Enter' || k === 'Escape') showIntro(chapterLevel);
       break;
     case 'INTRO':
       if (k === 'Enter') startLevel(ui.currentLevel);
@@ -460,4 +525,5 @@ export function handleKeydown(e: KeyboardEvent): void {
       else if (k === 'Escape') showSelect();
       break;
   }
+  if (ui.screen === 'TITLE') armIdle(); // every title keypress resets the demo clock
 }
