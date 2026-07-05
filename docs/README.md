@@ -26,7 +26,7 @@ Design expansions (the v2 rework):
 
 7. **[level-audit.md](level-audit.md)** — the designer audit of the
    original ten levels and the multi-path solvability framework that
-   grew the campaign to its current nineteen levels.
+   grew the campaign to its current twenty levels.
 8. **[new-mechanics.md](new-mechanics.md)** — toads (flippable enemies),
    the linter sweep (`0`/`$` with teeth), the relative-number gutter, and
    the cloud layer (`Ctrl-u`/`Ctrl-d`).
@@ -63,9 +63,9 @@ edits. The world advances one tick per completed keystroke command — so
 Bombs aren't picked up; they're earned by opening a broken code-tile with
 `i` and fixing the word inside using real vim edit commands, then armed and
 dropped with `x`. Motions themselves are collectible: each level's keycap
-pickup adds its motion group to your permanent vocabulary. Nineteen levels
-teach vim from `hjkl` up through `ciw` and `Ctrl-u`/`Ctrl-d` (a cloud
-layer), tightening keystroke budgets as the moveset grows, so the game's
+pickup adds its motion group to your permanent vocabulary. Twenty levels
+teach vim from `hjkl` up through `ciw`, `Ctrl-u`/`Ctrl-d` (a cloud
+layer), and macros, tightening keystroke budgets as the moveset grows, so the game's
 difficulty curve **is** a vim curriculum — and every level is proven by
 test to be solvable along multiple distinct routes, with par achievable.
 

@@ -22,7 +22,7 @@
   <a href="https://github.com/mikeldking/vimberman/actions/workflows/pages.yml"><img alt="Pages deploy" src="https://github.com/mikeldking/vimberman/actions/workflows/pages.yml/badge.svg"></a>
   <a href="https://mikeldking.github.io/vimberman/"><img alt="Play on GitHub Pages" src="https://img.shields.io/badge/play-in%20your%20browser-2ea44f?logo=github"></a>
   <img alt="TypeScript strict" src="https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white">
-  <img alt="19 levels" src="https://img.shields.io/badge/campaign-19%20levels-ff69b4">
+  <img alt="20 levels" src="https://img.shields.io/badge/campaign-20%20levels-ff69b4">
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-blue"></a>
   <a href="CONTRIBUTING.md"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-unimaginably%20welcome-fff56a"></a>
 </p>
@@ -76,7 +76,7 @@ you accidentally learned the world's most portable skill.
 | <img src="assets/shot-linter.png" alt="A linter row glowing hot; only the margins are safe"> | <img src="assets/shot-sky.png" alt="The cloud layer, reached with Ctrl-u, with kites aloft"> |
 | *The linter sweeps its row — `0` and `$` save lives* | *`Ctrl-u` rides an updraft into the cloud layer* |
 
-## The 19-level curriculum
+## The 20-level curriculum
 
 The difficulty curve **is** a Vim curriculum. Each level makes exactly one
 new trick load-bearing:
@@ -102,9 +102,10 @@ new trick load-bearing:
 | 14 | BOOKMARKED | `m{a}` `` `{a} `` — bookmarks |
 | 15 | BALANCED BRACKETS | `%` — jump to the matching bracket |
 | 16 | GREP | `/{word}` `n` — search the whole file |
-| 17 | THE FINAL REFACTOR | everything — and a merciless budget |
-| 18 | BABY STEPS, PROMOTED | worn keys — lead with a count |
-| 19 | AUTOMATE YOURSELF | `q @` — record and replay macros |
+| 17 | DON'T REPEAT YOURSELF | `.` — repeat the last edit |
+| 18 | THE FINAL REFACTOR | everything — and a merciless budget |
+| 19 | BABY STEPS, PROMOTED | worn keys — lead with a count |
+| 20 | AUTOMATE YOURSELF | `q @` — record and replay macros |
 
 </details>
 
@@ -120,6 +121,7 @@ new trick load-bearing:
 | `m{a}` `` `{a} `` | Drop a mark, teleport back to it. |
 | `%` | Bounce between paired bracket doors. |
 | `/{word}` `n` | Search the level; `n` jumps to the next hit. |
+| `.` | Repeat your last terminal edit — one keystroke, one golf stroke. |
 | `q{a}` `@{a}` | Record a macro, replay it — one tick per replayed command. |
 | `Ctrl-u` `Ctrl-d` | Ride an updraft into the cloud layer / drop back down. |
 | `i` | Open the code tile underfoot: one-line Vim terminal, real edits. |
@@ -178,7 +180,7 @@ drawn to a canvas with a CRT shell.
 
 | Path | Role |
 |---|---|
-| [`src/levels.ts`](src/levels.ts) | 19 levels as ASCII maps + terminals, bushes, keycaps, linters, sky layers, budgets |
+| [`src/levels.ts`](src/levels.ts) | 20 levels as ASCII maps + terminals, bushes, keycaps, linters, sky layers, budgets |
 | [`src/engine/`](src/engine/) | Pure game logic: motions, terminals, bombs, AI, undo, deterministic ticks |
 | [`src/render/sprites.ts`](src/render/sprites.ts) | Procedural pixel-art atlas — every sprite is a validated character grid |
 | [`src/render/renderer.ts`](src/render/renderer.ts) | Canvas draw loop: animation, tweening, particles, shake, glow |
