@@ -112,8 +112,8 @@ calls `bonk()` instead, which still burns a tick, matching real vim's
   while moving in their allowed direction (`ONEWAY` map + `onewayOk`).
   Step off in the wrong direction later and you simply can't re-enter —
   there's no backtracking through a one-way tile. This turns route
-  planning into a real commitment, taught explicitly in level 8
-  ("AGAINST THE CURRENT").
+  planning into a real commitment, taught explicitly in AGAINST THE
+  CURRENT.
 
 ### Terrain that blocks bombs specifically
 
@@ -169,8 +169,8 @@ of commands (`termKey` in `src/engine/engine.ts`):
   `s` (substitute char + enter insert), `i`/`a`/`A` (enter insert at
   cursor / after cursor / at end).
 - Word ops: `cw` (change to word end), `ciw` (change the whole word under
-  the cursor, from anywhere inside it) — these are the level 6 and
-  level 9 teaching moments respectively.
+  the cursor, from anywhere inside it) — the REWRITE THE RULES and
+  WARPED WORDS teaching moments respectively.
 - `.` (dot, keycap-gated): replays the last completed edit at the cursor
   for ONE keystroke and one tick, whatever the edit's length — `ciw bomb
   Esc` on tile A becomes `i` `.` on tile B. Edit memory persists across

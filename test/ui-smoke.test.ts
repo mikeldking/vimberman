@@ -23,6 +23,9 @@ describe('ui smoke', () => {
     dom.key('j'); dom.key('k'); dom.key('Enter');
     expect(dom.els.panel.innerHTML).toContain('SELECT LEVEL');
     expect(dom.els.panel.innerHTML).toContain('LOCKED');
+    // the list is grouped under the three chapter headers (docs/story.md)
+    expect(dom.els.panel.innerHTML).toContain('CHAPTER ONE — ONBOARDING');
+    expect(dom.els.panel.innerHTML).toContain('CHAPTER THREE — MERGE CONFLICT');
     dom.key('Enter');
     // first entry into a chapter level shows its story card once, ever
     expect(dom.els.panel.innerHTML).toContain('CHAPTER ONE');
@@ -99,7 +102,8 @@ describe('ui smoke', () => {
       [5, 7, 5, 'purge every'],       // clean
       [7, 1, 5, 'land on every'],     // coins
       [10, 12, 9, 'stroke'],          // golf
-      [16, 5, 7, 'scan head'],        // spark (the finale — index moves as levels land before it)
+      [16, 14, 1, 'stroke'],          // golf under a dot budget (DON'T REPEAT YOURSELF)
+      [17, 5, 7, 'scan head'],        // spark (the finale — index moves as levels land before it)
     ];
     for (const [idx, x, y, text] of tiles) {
       game.loadLevel(idx);

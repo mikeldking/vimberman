@@ -525,6 +525,42 @@ export const LEVELS: LevelDef[] = [
     par: 8, limit: 20,
   },
   {
+    name: 'DON\'T REPEAT YOURSELF',
+    teaches: '. — repeat the last edit',
+    intro: [
+      'Some fixes you type once and keep forever. Inside a',
+      'code-tile,  .  replays your whole last edit for ONE key.',
+      'Three tiles share one disease. The far one is budgeted:',
+      'two keystrokes allowed, and the cure is seven keys long.',
+      'So the cure is not typing. DRY — let the dot repeat you.',
+    ],
+    map: [
+      '###################',
+      '#P?..T..%.dTQrT.y*#',
+      '####..########*.###',
+      '####**####**%...%E#',
+      '###################',
+    ],
+    terminals: {
+      '5,1': { broken: 'zzzz', target: 'bomb', grants: 1, hint: 'cw bomb Esc — then remember it' },
+      '11,1': { broken: 'pppp', target: 'bomb', grants: 1, hint: 'i . — you already wrote this fix' },
+      '14,1': { kind: 'golf', broken: 'qqqq', target: 'bomb', strokes: 2, grants: 1, hint: 'two strokes. you typed the cure already.' },
+    },
+    bushes: {
+      '17,1': { type: 'K', amt: 5 },
+      '5,3': { type: 'K', amt: 6 },
+      '4,3': { type: 'U', amt: 1 },
+      '14,2': { type: 'K', amt: 6 },
+      '11,3': { type: 'K', amt: 10 },
+      '10,3': { type: 'U', amt: 1 },
+    },
+    enemyOpts: { '12,1': { leash: 'row' } },
+    keycaps: { '2,1': 'dot' },
+    hint: 'the golf tile cannot be typed. it can only be remembered.',
+    solution: 'l 3l i cw bomb <e> 2l x 2h 2j h k k 4l 6l i . l 2j x 2k Fr l j k j j 2l l',
+    par: 43, limit: 76,
+  },
+  {
     name: 'THE FINAL REFACTOR',
     // pinned to the index it had when its routes were authored — insertions
     // before it must not reshuffle the mage's dice

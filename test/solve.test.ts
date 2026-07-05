@@ -80,17 +80,25 @@ const ROUTES: Record<number, Record<string, string>> = {
     greedy: 'l /bug<cr> 7l n n 5l n 3h fE',
   },
   17: {
+    // the honest line: no dot — full-fix T1 AND T3, fly the toad, skip the
+    // golf tile and the vault. wins, but misses par by 8: the tax IS the tuition
+    honest: 'l 3l i cw bomb <e> 2l x 2h 2j h k k 4l 3l i cw bomb <e> fy h 2j x 2k 2l h l h h 2j 2l',
+    // the vault dance: dot T3 too, overlap both fuses, loot the vault while
+    // the second bomb burns — every fuse tick is travel or loot
+    vault: 'l 3l i cw bomb <e> 2l x 2h 2j h k k 4l 3l i . 3l i . l 2j 2h x 2l x 2k h h l j j h 2h h 7l',
+  },
+  18: {
     // south arena: skip T1, G down the rail, ciw beside the mage
     safe: 'w w 3l j j h 2b 3h G ll ll i ciw bomb <e> ll x 4h h l h l l 7l k k',
     // hybrid: T1's two bombs, then the south wing skipping T2
     clever: 'w w ll i l ro 2l ~ l j j h 2b 3h G 6l x 4h h l h l l 7l k k',
   },
-  18: {
+  19: {
     // the senior flex: overshoot every count and let the walls brake —
     // proves slides clamp normally while bare taps stay refused
     clamp: '9j 9l 2k 2l 2j 2l 2k 2k 2h 2k 9l 9j',
   },
-  19: {
+  20: {
     // belt-and-suspenders: automate wing 2, hand-fly wing 3 (the linter
     // phases are tuned so THIS cadence threads them; full-manual dies)
     mixed: 'l qa l 2j 2l 2k 3l q @a l 2j 2l 2k 3l',

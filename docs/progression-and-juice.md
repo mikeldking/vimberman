@@ -41,6 +41,11 @@ mouth of the level keeps every map intact minus one floor tile.
 | `cw` | `c` operator in terminals | REWRITE THE RULES |
 | `inner` | `~` and `ci` in terminals | WARPED WORDS |
 | `sky` | `Ctrl-u`, `Ctrl-d` | HEAD IN THE CLOUDS |
+| `mark` | `m{a}`, `` `{a} `` | BOOKMARKED |
+| `match` | `%` on bracket tiles | BALANCED BRACKETS |
+| `search` | `/{word}`, `n` | GREP |
+| `dot` | `.` in terminals | DON'T REPEAT YOURSELF |
+| `macro` | `q{a}…q`, `@{a}` | AUTOMATE YOURSELF |
 
 Levels that teach a hazard or a synthesis grant no keycap — the tray
 visibly *not* growing is itself a signal that the lesson is judgment, not

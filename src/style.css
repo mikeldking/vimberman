@@ -73,6 +73,8 @@ canvas { display: block; image-rendering: pixelated; }
 .panel .foot { margin-top: 16px; color: #8fbf9f; font-size: 13px; }
 .panel .logo { font-size: 11px; line-height: 1.15; white-space: pre; color: var(--phos); margin-bottom: 14px; }
 .menu-item { padding: 1px 8px; white-space: pre; }
+.menu-head { padding: 7px 8px 1px; color: #58806a; font-size: 12px; letter-spacing: 2px; white-space: pre; }
+.menu-head:first-of-type { padding-top: 0; }
 .menu-item.sel { background: var(--phos); color: #0a0f0a; font-weight: bold; text-shadow: none; }
 .menu-item.locked { color: #35573f; }
 .menu-item.locked.sel { background: #35573f; color: #0a0f0a; }

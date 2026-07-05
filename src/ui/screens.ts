@@ -109,16 +109,20 @@ function showSelect(): void {
   renderSelect();
 }
 function renderSelect(): void {
-  const items = game.getLevels().map((lv, i) => {
+  // the campaign's three chapters (docs/story.md) group the list; headers are
+  // render-only — j/k walk the levels and never land on one
+  const rows = game.getLevels().map((lv, i) => {
     const n = i + 1;
-    return { locked: n > save.unlocked, n, lv, rec: save.levels[n] };
+    const locked = n > save.unlocked;
+    const rec = save.levels[n];
+    const ch = CHAPTERS.find((c) => c.level === n);
+    const head = ch ? `<div class="menu-head">${ch.title}</div>` : '';
+    const line = locked
+      ? `${String(n).padStart(2, '0')}  ????????????????????  [LOCKED]`
+      : `${String(n).padStart(2, '0')}  ${lv.name.padEnd(22)} <span class="stars">${rec ? '★'.repeat(rec.stars) + '☆'.repeat(3 - rec.stars) : '···'}</span>  ${rec ? `best ${String(rec.bestKeys).padStart(3)}` : '        '}  par ${lv.par}`;
+    return `${head}<div class="menu-item${i === menuIdx ? ' sel' : ''}${locked ? ' locked' : ''}">${i === menuIdx ? '> ' : '  '}${line}</div>`;
   });
-  show(`<h2>SELECT LEVEL</h2>${menuHtml(items, menuIdx, (it) => {
-    if (it.locked) return `${String(it.n).padStart(2, '0')}  ????????????????????  [LOCKED]`;
-    const stars = it.rec ? '★'.repeat(it.rec.stars) + '☆'.repeat(3 - it.rec.stars) : '···';
-    const best = it.rec ? `best ${String(it.rec.bestKeys).padStart(3)}` : '        ';
-    return `${String(it.n).padStart(2, '0')}  ${it.lv.name.padEnd(22)} <span class="stars">${stars}</span>  ${best}  par ${it.lv.par}`;
-  })}<div class="foot">j/k move · gg/G ends · Enter play · Esc back</div>`);
+  show(`<h2>SELECT LEVEL</h2>${rows.join('')}<div class="foot">j/k move · gg/G ends · Enter play · Esc back</div>`);
 }
 
 function showHelp(back?: () => void): void {

@@ -390,10 +390,27 @@ and is meant to be executed **one item at a time** by whoever picks it up next
   (first draft proved it by killing the speedrun at t3). Alternate proven
   route "clamp": overshoot counts (9j 9l), walls as brakes. 4 engine tests.
   146/146 pass.
-- [ ] **6.3 Grow the campaign to ~20 levels with chapter select.**
+- [x] **6.3 Grow the campaign to ~20 levels with chapter select.**
   (blocked: most of phases 3–5) Slot the new-motion levels into the chapter
   structure from 2.1; level select gains chapter headers; re-run the pacing
   audit (breather cadence, slack ratios) across the full set.
+  done: 2026-07-04 — campaign is 20 levels. New level 17 "DON'T REPEAT
+  YOURSELF" finally gives the dangling `dot` keycap its teaching slot
+  (GROUP_LEVEL dot 17, macro→20): three bomb-word tiles, the last a
+  strokes-2 golf tile that CAN'T be typed (7-key cure, 2-stroke budget) —
+  dot is economy-forced for par AND hard-forced for the golf gate. Par 43
+  proven (cw-bomb prime, gate-1 loot errand, i-dot the golf, Fr-flip +
+  squash the leashed toad, pocket-bush fuse beat); alternates: honest
+  dot-less 51 (misses par by 8 — the tuition) and vault dance 53
+  (overlapping fuses, both optional gates). Level select now groups under
+  the three story.md chapter headers (render-only rows, j/k unaffected,
+  smoke-tested). Pacing re-audit written into level-design.md (three slack
+  regimes; fixed L12 par drift 10→9 in the table) plus a docs sweep:
+  story/architecture 19→20, mechanics stale level numbers → names,
+  progression keycap table gained the five v2 groups, motions-v2 records
+  the landed teaching order (search 16 before dot 17). NOTE: the
+  grep/sed "showcase level" 4.2 hinted at is NOT part of this item —
+  parked below. 149/149 pass.
 - [ ] **6.4 Drill mode.** Freeform practice: pick any owned motion group, get a
   procedurally-lite arena (static, no enemies, coin-style targets), no save
   impact. Entry from title menu. This is the "arcade excuse" for audience #1
@@ -401,6 +418,10 @@ and is meant to be executed **one item at a time** by whoever picks it up next
 
 ## Parking lot (unranked, revisit when phases close)
 
+- Arsenal showcase level — grep/sed exist as optional retrofits (L6/L8)
+  but no level makes a variant load-bearing; 4.2's note deferred this to
+  6.3, which shipped the dot level instead. Design bar: one level where
+  the WORD you craft is the route decision.
 - `S` shield bush (+2 iframes, once) — deferred from 4.4; add only when a
   level design wants a shield beat.
 - Level-shape variety: a 40-wide "one-liner" map (pure `0 $ f ;` fantasy), a

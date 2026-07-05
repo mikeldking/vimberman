@@ -1,6 +1,6 @@
 # Level Design
 
-Vimberman has nineteen levels, and they are not just nineteen maps — they're
+Vimberman has twenty levels, and they are not just twenty maps — they're
 a vim curriculum with a Bomberman skin. Every level introduces **exactly
 one** new motion or concept (`src/levels.ts` → `teaches`), stated once on the
 intro card (`intro: [...]`), and that level's layout is built to require
@@ -25,14 +25,15 @@ authoring rules, see `docs/level-audit.md`; for the keycap unlock system,
 | 9 | AGAINST THE CURRENT | one-way tiles | — | 73 / 130 | Imp (leashed) + Zombie | 1 |
 | 10 | MIND THE MARGINS | `0`/`$` as linter anchors | — | 15 / 34 | Linter rows `!` `\|` | 2 |
 | 11 | WARPED WORDS | `~` and `ciw`; hard rock `&` | `inner` | 112 / 165 | Mage (free-roam) | 1 |
-| 12 | HEAD IN THE CLOUDS | `Ctrl-u` / `Ctrl-d` | `sky` | 10 / 26 | The sky layer; zombies ×4 | 2 |
+| 12 | HEAD IN THE CLOUDS | `Ctrl-u` / `Ctrl-d` | `sky` | 9 / 26 | The sky layer; zombies ×4 | 2 |
 | 13 | CUMULUS GOLF | kites — flight cuts the string | — | 10 / 30 | Kite (sky-native, full speed); sky exit | 2 |
 | 14 | BOOKMARKED | `m{a}` / `` `{a} `` — marks | `mark` | 22 / 52 | The vault (a sealed one-way pocket) | 2 |
 | 15 | BALANCED BRACKETS | `%` — matching bracket | `match` | 27 / 62 | The trapdoor closet; lint zombie | 2 |
 | 16 | GREP | `/{word}` `n` — search | `search` | 8 / 20 | Moat bands (full gap rows) | 2 |
-| 17 | THE FINAL REFACTOR | everything, two wings | — | 36 / 60 | all threats | 3 |
-| 18 | BABY STEPS, PROMOTED | worn keys — the tap tax | — | 24 / 28 | Bare hjkl refused; brutal budget | 2 |
-| 19 | AUTOMATE YOURSELF | `q`/`@` — macros (epilogue) | `macro` | 14 / 26 | Phased linter wings; manual play dies | 2 |
+| 17 | DON'T REPEAT YOURSELF | `.` — repeat the last edit | `dot` | 43 / 76 | The two-stroke golf gate; overlapping fuses | 3 |
+| 18 | THE FINAL REFACTOR | everything, two wings | — | 36 / 60 | all threats | 3 |
+| 19 | BABY STEPS, PROMOTED | worn keys — the tap tax | — | 24 / 28 | Bare hjkl refused; brutal budget | 2 |
+| 20 | AUTOMATE YOURSELF | `q`/`@` — macros (epilogue) | `macro` | 14 / 26 | Phased linter wings; manual play dies | 2 |
 
 "Routes proven" = distinct scripted lines asserted in `test/solve.test.ts`
 (speedrun always; safe/clever/greedy where the map supports them).
@@ -50,8 +51,10 @@ line anchors under fire (linter rows) → precision edits (`~`, `ciw`) →
 the vertical axis (`Ctrl-u`/`Ctrl-d`) → flight as scissors (kites, the
 sky's toad lesson at lethal stakes) → bookmarks as un-commitment
 (`m`/`` ` ``, the vault) → paired doors (`%`, the trapdoor) → search as
-transit (`/`+`n`, the moats) → synthesis (17, THE FINAL REFACTOR — adds
-nothing new) → the epilogue: automation (`q`/`@`, one turn per wing).
+transit (`/`+`n`, the moats) → edits as muscle memory (`.`, the
+two-stroke golf gate) → synthesis (18, THE FINAL REFACTOR — adds
+nothing new) → the worn-keys remix (19) → the epilogue: automation
+(`q`/`@`, one turn per wing).
 
 **Threat ladder** (what's hunting you):
 no enemies → slow greedy chaser (zombie) → a leashed obstacle version of a
@@ -69,9 +72,11 @@ Three placement rules worth preserving:
   keycap — their lesson is judgment (flip timing, commitment, anchors,
   synthesis), not vocabulary. The HUD tray visibly not growing is itself
   the signal.
-- **Breathers are short and choice-dense, not easy-long.** Levels 2, 5, 7
-  and 12 all have single-digit-to-low pars with real route choice; they sit
-  between the long edit-heavy levels (4, 6, 8, 11) as palate cleansers.
+- **Breathers are short and choice-dense, not easy-long.** Levels 2, 5, 7,
+  12–13 and 16 all have single-digit-to-low pars with real route choice;
+  they sit between the long edit-heavy levels (4, 6, 8, 11, 17) as palate
+  cleansers. The 17–18 heavy pair is deliberately fronted by the
+  campaign's shortest breather (16, par 8).
 
 ## Tuning the budget: par and limit
 
@@ -86,12 +91,18 @@ picked from feel:
   and one avoidable detour. Alternate routes (safe/clever) are asserted to
   win within `limit`.
 
-Slack (`limit/par`) is no longer strictly monotonic: levels that teach a
-new *system* (7 toads, 10 linter, 12 sky) run generous (~2.2–2.6×) because
-the player is learning rules, while synthesis levels run tight (11 at
-~1.5×, 13 at ~1.65×) because everything is known. The finale's slack budget
-assumes the speedrun's four deliberate mage-dodge keys, not wait-filler —
-see the wait-tax findings in `docs/level-audit.md`.
+Slack (`limit/par`) is no longer strictly monotonic. The 20-level re-audit
+(2026-07-04) shows three regimes: levels that teach a new *system* (7
+toads, 10 linter, 12 sky, 13 kites) run generous (~2.4–3.0×) because the
+player is learning rules; the mid-campaign new-motion levels (14–16) hold
+~2.3–2.5×; and the tail tightens on purpose — 17 runs 1.77× because its
+dot lesson demands finale-grade fuse choreography, the finale (18) runs
+1.67×, the worn-keys remix (19) is the deliberate outlier at 1.17×, and
+the epilogue (20) relaxes to 1.86× so macros get experimentation room.
+The precision levels (9 at 1.78×, 11 at 1.47×) remain the mid-campaign
+skill checks. The finale's slack budget assumes the speedrun's four
+deliberate mage-dodge keys, not wait-filler — see the wait-tax findings
+in `docs/level-audit.md`.
 
 ## Level anatomy: recurring structural choices
 

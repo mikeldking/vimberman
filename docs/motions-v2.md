@@ -195,7 +195,10 @@ walk). Par assumes the formula; the un-dotted route visibly cannot make
 par. This is the strongest efficiency-as-score moment in the game and
 needs **no new geometry** — per TODO 3.5 it ships as a keycap inside an
 existing-style terminal-heavy level, and later levels' pars quietly
-assume it.
+assume it. (Landed as level 17, DON'T REPEAT YOURSELF: three `bomb`
+tiles behind rock gates, the last a `strokes: 2` golf tile that cannot
+be typed — only replayed. The par route dots twice and misses par by 8
+without the dot.)
 
 ### Data shapes
 
@@ -354,14 +357,16 @@ echoes, in the established register (`docs/progression-and-juice.md`):
 - `/`/`n`: `E: '/' — unmapped. grep is earned.`
 
 Teaching order (rationale in `docs/level-design.md`'s two-ladder model):
-`mark` → `match` → `dot` → `search`. Marks extend the commitment lesson
-(one-ways, level 9); `%` extends bomb-escape planning (level 4 onward);
-`dot` extends terminal editing (`cw`/`ciw`, levels 8/11); `search` is
-the capstone that assumes word-literacy (level 5) and count-literacy
-(level 2). Exact level numbers are assigned when the levels land (items
-3.3–3.6 + 6.3); `GROUP_LEVEL` in `src/ui/save.ts` gains each entry in
-the same commit as its teaching level, keeping the reach-implies-
-ownership migration honest.
+this doc sketched `mark` → `match` → `dot` → `search`; the campaign
+landed `mark` (14) → `match` (15) → `search` (16) → `dot` (17). Search
+moved ahead of dot because GREP wanted the mid-tail breather slot and
+dot's level grew into the pre-finale heavy (DON'T REPEAT YOURSELF, with
+a strokes-2 golf tile as the forcing function). The pedagogy holds:
+marks extend the commitment lesson (one-ways, level 9); `%` extends
+bomb-escape planning (level 4 onward); `search` assumes word-literacy
+(level 5) and count-literacy (level 2); `dot` extends terminal editing
+(`cw`/`ciw`, levels 8/11) and hands the finale its edit economy.
+`GROUP_LEVEL` in `src/ui/save.ts` carries the final slots.
 
 ## Shared engine notes
 
