@@ -109,7 +109,7 @@ The engine's vocabulary gate defaults to everything-unlocked; only
 
 ## Testing & CI
 
-`npm test` runs vitest; `.github/workflows/pages.yml` gates deploy on
+`pnpm test` runs vitest; `.github/workflows/pages.yml` gates deploy on
 typecheck + tests:
 
 - **`test/solve.test.ts`** — imports the engine directly (no DOM) and replays
@@ -131,7 +131,7 @@ typecheck + tests:
   throws on any miscounted row or unknown palette key, so pixel-art typos are
   caught in CI, not in the browser.
 
-When changing engine behavior, run `npm test` before trusting a change —
+When changing engine behavior, run `pnpm test` before trusting a change —
 solve tests catch balance/solvability regressions, the smoke test catches
 integration regressions between the engine and the input/render layer.
 

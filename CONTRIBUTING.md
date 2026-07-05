@@ -13,10 +13,10 @@ and wild-but-on-premise ideas are all extremely welcome.
 ```sh
 git clone https://github.com/mikeldking/vimberman.git
 cd vimberman
-npm install
-npm run dev     # play your changes at the printed URL
-npm test        # the whole suite — solvability, engine, UI smoke, sprites
-npm run build   # strict typecheck + production build (CI runs this too)
+pnpm install
+pnpm dev     # play your changes at the printed URL
+pnpm test    # the whole suite — solvability, engine, UI smoke, sprites
+pnpm build   # strict typecheck + production build (CI runs this too)
 ```
 
 Node.js 22+ is what CI uses.
@@ -75,8 +75,8 @@ engine.
 
 ## Checklist before you open the PR
 
-- [ ] `npm test` passes (including your new solver route, if you added a level)
-- [ ] `npm run build` passes (strict typecheck)
+- [ ] `pnpm test` passes (including your new solver route, if you added a level)
+- [ ] `pnpm build` passes (strict typecheck)
 - [ ] Docs updated if behavior changed
 - [ ] It's more fun than it was before
 

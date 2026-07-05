@@ -159,16 +159,16 @@ Requirements: Node.js 22+ (what CI uses).
 ```sh
 git clone https://github.com/mikeldking/vimberman.git
 cd vimberman
-npm install
-npm run dev        # Vite dev server with HMR
+pnpm install
+pnpm dev        # Vite dev server with HMR
 ```
 
 Other useful commands:
 
 ```sh
-npm test           # vitest: solvability proofs, engine rules, UI smoke, sprites
-npm run build      # strict typecheck + production build into dist/
-npm run preview    # serve the production build locally
+pnpm test           # vitest: solvability proofs, engine rules, UI smoke, sprites
+pnpm build      # strict typecheck + production build into dist/
+pnpm preview    # serve the production build locally
 ```
 
 ## How it's built
