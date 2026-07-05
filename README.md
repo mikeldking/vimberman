@@ -5,303 +5,222 @@
 </p>
 
 <p align="center">
-  <a href="https://mikeldking.github.io/vimberman/"><strong>▶ Play Vimberman</strong></a>
-  ·
-  <a href="https://github.com/mikeldking/vimberman">GitHub</a>
-  ·
+  <strong><a href="https://mikeldking.github.io/vimberman/">▶ PLAY NOW — free, in your browser, no install</a></strong>
+</p>
+
+<p align="center">
   <a href="docs/README.md">Design docs</a>
   ·
   <a href="docs/mechanics.md">Mechanics</a>
   ·
   <a href="docs/level-design.md">Level design</a>
+  ·
+  <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 
 <p align="center">
   <a href="https://github.com/mikeldking/vimberman/actions/workflows/pages.yml"><img alt="Pages deploy" src="https://github.com/mikeldking/vimberman/actions/workflows/pages.yml/badge.svg"></a>
-  <a href="https://mikeldking.github.io/vimberman/"><img alt="GitHub Pages" src="https://img.shields.io/badge/play-GitHub%20Pages-2ea44f?logo=github"></a>
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white">
-  <img alt="Vite" src="https://img.shields.io/badge/Vite-browser%20arcade-646cff?logo=vite&logoColor=white">
+  <a href="https://mikeldking.github.io/vimberman/"><img alt="Play on GitHub Pages" src="https://img.shields.io/badge/play-in%20your%20browser-2ea44f?logo=github"></a>
+  <img alt="TypeScript strict" src="https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white">
+  <img alt="19 levels" src="https://img.shields.io/badge/campaign-19%20levels-ff69b4">
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-blue"></a>
+  <a href="CONTRIBUTING.md"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-unimaginably%20welcome-fff56a"></a>
 </p>
 
 # VIMBERMAN
 
-<<<<<<< HEAD
-**Vim motions. Bomb fuses. Keystroke economy.**
+**The world only moves when you type. Type better.**
 
-Vimberman is a browser-based Bomberman-like where every move is a Vim command.
-You do not walk with arrow keys and place bombs with spacebar; you survive by
-using `hjkl`, counts, word motions, find motions, line jumps, edits, and undo as
-an arcade input language.
+Vimberman is a browser Bomberman-like where every move is a Vim command. No
+arrow keys. No spacebar. You survive with `hjkl`, counts, word hops, find
+motions, real edits, and undo — and the world advances **one tick per
+completed command**. Twelve taps of `l` give the zombies twelve turns. `12l`
+gives them one.
 
-The world advances **one tick per completed command**. Twelve taps of `l` give
-the zombies twelve turns. `12l` gives them one. Vim's editing philosophy — move
-farther, with fewer keys — becomes the difference between a clean escape and a
-very educational explosion.
+That's the whole game: Vim's editing philosophy — *move farther with fewer
+keys* — becomes the difference between a clean escape and a very educational
+explosion. By the final level you're setting marks, bouncing off `%`,
+searching with `/`, and recording macros to solve puzzles. Congratulations:
+you accidentally learned the world's most portable skill.
 
-Built entirely with **Hermes Agent** and **Fable 5**. PRs are extremely welcome:
-bring weird levels, meaner enemies, better juice, sillier jokes, and anything
-that makes the game **unimaginably more fun**.
+<p align="center">
+  <a href="https://mikeldking.github.io/vimberman/">
+    <img src="assets/shot-level1.png" alt="Level 1 gameplay: the hint toast suggests typing 4l instead of llll" width="90%">
+  </a>
+  <br>
+  <em>The game coaches you toward fluency. Rudely, if necessary.</em>
+</p>
 
-> Bombs · zombies · and the world's most portable skill.
-=======
-A Bomberman-like for the browser where every move is a vim motion. Nineteen
-levels that teach vim progressively — from `hjkl` to `ciw` and `Ctrl-u` —
-under bomb fuses, keystroke budgets, and enemies that move only when you type.
-Motions are Metroid-style powerups: collect a keycap `?` to add its motion to
-your vocabulary, permanently.
->>>>>>> d2e3178 (Checkpoint: story arc, motions v2, arsenal, and four new levels)
+## Why you'll get hooked
 
-## Play
+- **Turn-based on your keystrokes.** Enemies, fuses, and hazards move only
+  when you complete a command. It's chess where the clock is your WPM in Vim.
+- **Bombs come from editing.** Stand on a code tile, press `i`, and fix the
+  broken word — `bpmb` → `bomb` — with real Vim edits (`x`, `r`, `~`, `s`,
+  `cw`, `ciw`). A correct word arms a bomb. Drop it with `x`. Now run.
+- **Motions are Metroid powerups.** Keycap pickups `?` permanently add motion
+  families to your vocabulary. You learn `f` because a gap is uncrossable
+  without it, not because a tutorial said so.
+- **Undo is your lives.** `u` rewinds one world tick — even death — but
+  charges are scarce and no undo crosses an explosion.
+- **Golf scoring.** Every level has a hard keystroke budget and a par for the
+  3-star clear. Deterministic, seeded enemies make every retry identical:
+  plan like a puzzle, execute like a speedrun.
 
-- **Live game:** <https://mikeldking.github.io/vimberman/>
-- **Source:** <https://github.com/mikeldking/vimberman>
-- **Design reference:** [`docs/README.md`](docs/README.md)
+## Screenshots
 
-The published build is deployed by GitHub Actions from `main` to GitHub Pages.
+| | |
+|:---:|:---:|
+| <img src="assets/shot-terminal.png" alt="Terminal editing mode: fixing the broken word bpmb into bomb"> | <img src="assets/shot-bomb.png" alt="An armed bomb ticking down while the player runs"> |
+| *Fix `bpmb` with real Vim edits to arm a bomb* | *…then get out of the plus-shaped blast* |
+| <img src="assets/shot-linter.png" alt="A linter row glowing hot; only the margins are safe"> | <img src="assets/shot-sky.png" alt="The cloud layer, reached with Ctrl-u, with kites aloft"> |
+| *The linter sweeps its row — `0` and `$` save lives* | *`Ctrl-u` rides an updraft into the cloud layer* |
 
-## At a glance
+## The 19-level curriculum
 
-| Feature | What it means |
-|---|---|
-| **13 puzzle-action levels** | A compact campaign that teaches Vim progressively, from `hjkl` to `ciw` and `Ctrl-u`/`Ctrl-d`. |
-| **Turn-based on keystrokes** | Every completed command advances enemies, bombs, hazards, and fuses by one tick. Counts are survival tech. |
-| **Bombs from editing** | Stand on a code tile, enter terminal mode with `i`, fix a broken word using real Vim edits, then drop the armed bomb with `x`. |
-| **Metroid-style motion unlocks** | Keycap pickups permanently add motion groups to your vocabulary. You learn by needing the new tool. |
-| **Deterministic enemies** | Seeded RNG makes every retry play the same way: solve it like a puzzle, execute it like a speedrun. |
-| **Golf scoring** | Each level has a hard key budget and a par target for 3-star clears. |
-| **Pure engine, browser UI** | TypeScript engine logic is DOM-free and tested separately from the Vite/canvas UI. |
+The difficulty curve **is** a Vim curriculum. Each level makes exactly one
+new trick load-bearing:
 
-## How it plays
+<details>
+<summary><strong>Spoiler: the full campaign</strong></summary>
 
-- **Move with Vim, not arrows.** `h`, `j`, `k`, `l` step one tile; counts like
-  `5l` or `3j` slide multiple tiles as one world turn.
-- **Hop words and find letters.** `w`, `b`, `e`, `f{char}`, `t{char}`, `;`, and
-  `,` become flight paths over gaps, enemies, and trap layouts.
-- **Edit to arm bombs.** Code tiles open a one-line Vim-ish terminal where `x`,
-  `r`, `~`, `s`, `cw`, and `ciw` repair broken identifiers into `bomb`.
-- **Undo is a resource.** `u` rewinds one world tick — even death — but charges
-  are limited and explosions erase history.
-- **Read the terminal.** The gutter behaves like `relativenumber`, the statusline
-  echoes pending keys, and the ruler helps you count like a real Vim user.
+| # | Level | Teaches |
+|---:|---|---|
+| 01 | BABY STEPS | `h j k l` |
+| 02 | COUNT THE CORRIDORS | counts: `10l` `6j` |
+| 03 | LEAP OF FAITH | `f F t ;` — dash, stop short, repeat |
+| 04 | BUGFIX BOMBS | `i x r` — edit words, earn bombs |
+| 05 | WORD BRIDGES | `w b e` — hop between words |
+| 06 | THE LONG WAY | `0 $ gg G` — slam across lines |
+| 07 | FLIP THE SCRIPT | flight flips toads |
+| 08 | REWRITE THE RULES | `cw` — change a whole word |
+| 09 | AGAINST THE CURRENT | one-way tiles — commit or route around |
+| 10 | MIND THE MARGINS | `0 $` — anchors when the row goes hot |
+| 11 | WARPED WORDS | `~` and `ciw` — case flips, inner words |
+| 12 | HEAD IN THE CLOUDS | `Ctrl-u Ctrl-d` — the sky layer |
+| 13 | CUMULUS GOLF | kites — flight cuts the string |
+| 14 | BOOKMARKED | `m{a}` `` `{a} `` — bookmarks |
+| 15 | BALANCED BRACKETS | `%` — jump to the matching bracket |
+| 16 | GREP | `/{word}` `n` — search the whole file |
+| 17 | THE FINAL REFACTOR | everything — and a merciless budget |
+| 18 | BABY STEPS, PROMOTED | worn keys — lead with a count |
+| 19 | AUTOMATE YOURSELF | `q @` — record and replay macros |
+
+</details>
 
 ## Controls / motion vocabulary
 
 | Keys | Effect |
 |---|---|
-| `h j k l` | Step left/down/up/right. Bonking a wall still costs a turn. |
-| `5l`, `3j`, ... | Counted motion: travel many tiles for one enemy tick. |
-| `w` `b` `e` | Hop between word starts/ends on lettered tiles; flight crosses gaps and enemies. |
-| `f{c}` `F{c}` `t{c}` `T{c}` | Dash along a row to, or just before, character `{c}`. |
-| `;` `,` | Repeat or reverse the last find/till motion. |
-| `0` `$` | Snap to the start/end of the current row. Excellent when a linter row goes hot. |
-| `gg` `G` | Slam to the top/bottom of the current column. |
-| `i` | Open the code tile underfoot and enter terminal-editing mode. |
-| `x` | Drop an armed bomb in the world; delete a character in terminal mode. |
-| `u` | Rewind one tick if you have undo charges. |
+| `h j k l` | Step. Bonking a wall still costs a turn. |
+| `5l`, `3j`, … | Counted motion: many tiles, one enemy tick. |
+| `w` `b` `e` | Hop between words of lettered tiles, soaring over gaps and enemies. |
+| `f{c}` `F{c}` `t{c}` `T{c}` `;` `,` | Dash along the row to (or just before) character `{c}`; repeat, reverse. |
+| `0` `$` `gg` `G` | Slam to row/column ends, sweeping up items on the way. |
+| `m{a}` `` `{a} `` | Drop a mark, teleport back to it. |
+| `%` | Bounce between paired bracket doors. |
+| `/{word}` `n` | Search the level; `n` jumps to the next hit. |
+| `q{a}` `@{a}` | Record a macro, replay it — one tick per replayed command. |
 | `Ctrl-u` `Ctrl-d` | Ride an updraft into the cloud layer / drop back down. |
-| `:` | Open ex commands: `:help`, `:map`, `:hint`, `:q`, `:q!`. |
+| `i` | Open the code tile underfoot: one-line Vim terminal, real edits. |
+| `x` | Drop an armed bomb (in the world) / delete a char (in the terminal). |
+| `u` | Rewind one world tick — even death. Charges are precious. |
+| `:` | Ex commands: `:help` `:map` `:hint` `:q` `:q!` |
 
-## The world
+The playfield reads like a buffer with `relativenumber`: the gutter counts
+rows for you (see a 4 in the gutter → type `4j`), the ruler counts columns,
+and a pending count lights up its landing tiles.
 
-The dungeon is source code with teeth:
+## The bestiary
 
-- `▒` soft rocks crumble under any blast.
-- `▓` hard rocks need a widened blast radius.
-- `~` gaps stop walking but not word/find flight motions.
-- `‹ › ˄ ˅` one-way tiles turn routes into commitments.
-- `*` bushes hide key budget, undo, bomb, and radius pickups.
-- `?` keycaps unlock motion families.
-- `:` code tiles are broken identifiers waiting to become bombs.
-- `E` is the glowing exit portal.
-
-The bestiary is tuned to punish inefficient editing:
+The dungeon is source code with teeth, tuned to punish inefficient editing:
 
 | Enemy / hazard | Role |
 |---|---|
 | **Zombie `Z`** | Half-speed chaser. It loves wasted keystrokes. |
-| **Imp `&`** | Drops bombs of its own. Bait it into mining rocks or fragging friends. |
-| **Toad `Q`** | Hops over pits; flight motions flip it onto its back for a squash bonus. |
-| **Mage `M`** | Teleports on a readable cycle and fires down rows/columns. Never idle aligned. |
-| **Linter `!`** | Row-sweeping hazard with warning phases. Margins and `0`/`$` are your friends. |
+| **Imp `&`** | Drops its own bombs. Bait it into mining rocks — or fragging its friends. |
+| **Toad `Q`** | Hops pits every third turn. Fly over it (`w`, `f`…) to flip it; squash for a bonus. |
+| **Mage `M`** | Teleports on a readable cycle, fires down rows and columns. Never idle aligned. |
+| **Kite `Y`** | Sky-native. Any flight motion that crosses its string cuts it down. |
+| **The linter `!`** | Not a creature — a hazard. Sweeps its whole row on a cycle; only the margins survive. `0` and `$` are one keystroke from anywhere. |
+| **The flytrap** | Lives in level 12's shadows. That's all you get. |
 
-## Project map
+Boulders bomb open · steel needs a widened blast · starfield gaps only yield
+to flight motions · chevron tiles are one-way commitments · bushes hide
+budget, bombs, radius, and undo charges · keycaps `?` unlock motions · the
+glowing portal is the exit.
 
-| Path | Role |
-|---|---|
-| [`src/levels.ts`](src/levels.ts) | 13 levels as ASCII maps, terminals, bushes, keycaps, sky layers, budgets, and solution scripts. |
-| [`src/engine/`](src/engine/) | Pure game logic: motions, terminals, bombs, AI, undo, deterministic ticks. No DOM. |
-| [`src/render/sprites.ts`](src/render/sprites.ts) | Procedural 16×16 pixel-art sprite atlas, validated by tests. |
-| [`src/render/renderer.ts`](src/render/renderer.ts) | Canvas renderer: animation, tweening, particles, shake, glow, gutter, ruler. |
-| [`src/ui/`](src/ui/) | Menus, HUD/statusline, save state, terminal editor, WebAudio synth hooks. |
-| [`docs/`](docs/) | Design docs for premise, mechanics, bestiary, level design, UI/UX, architecture, and v2 systems. |
+## Run it locally
 
-## Design docs
-
-Start here if you want to understand or extend the game:
-
-1. [`docs/premise.md`](docs/premise.md) — the pitch, tone, audience, and design pillars.
-2. [`docs/mechanics.md`](docs/mechanics.md) — rulebook for movement, bombs, undo, items, win/fail states.
-3. [`docs/bestiary.md`](docs/bestiary.md) — enemies, AI roles, and tuning intent.
-4. [`docs/level-design.md`](docs/level-design.md) — curriculum, par/budget tuning, level curve.
-5. [`docs/ui-ux.md`](docs/ui-ux.md) — CRT shell, HUD/statusline, onboarding, audio, juice.
-6. [`docs/architecture.md`](docs/architecture.md) — engine/UI split, determinism, save format, test strategy.
-7. [`docs/new-mechanics.md`](docs/new-mechanics.md) — toads, linter rows, gutter/ruler, cloud layer.
-8. [`docs/progression-and-juice.md`](docs/progression-and-juice.md) — unlocks, hints, scoring, command line.
-
-## Development
-
-Requirements: Node.js 22+ is what CI uses.
+Requirements: Node.js 22+ (what CI uses).
 
 ```sh
+git clone https://github.com/mikeldking/vimberman.git
+cd vimberman
 npm install
 npm run dev        # Vite dev server with HMR
-npm run build      # strict typecheck + production build into dist/
-npm run preview    # serve the production build locally
-npm test           # vitest: solvability, engine rules, UI smoke, sprite atlas
 ```
 
-<<<<<<< HEAD
-Useful one-offs:
-=======
-### GitHub Pages
+Other useful commands:
 
-The repo deploys itself: `.github/workflows/pages.yml` typechecks, runs the
-level-solver + engine + UI tests on every push to `main`, then builds and
-publishes `dist/` to Pages. One-time setup: repo
-**Settings → Pages → Source → GitHub Actions**.
+```sh
+npm test           # vitest: solvability proofs, engine rules, UI smoke, sprites
+npm run build      # strict typecheck + production build into dist/
+npm run preview    # serve the production build locally
+```
 
-## How it plays
+## How it's built
 
-- **Turn-based on your keystrokes.** Every completed command is one world tick:
-  enemies step, fuses burn. Twelve presses of `l` give the zombies twelve moves;
-  `12l` gives them one. Keystroke economy is literally survival.
-- **Keystroke budget.** Each level has a hard budget and a par. Beat par for
-  3 stars. Run dry and the cursor grows still.
-- **Bombs come from editing.** Stand on a code-tile `:` and press `i` to open
-  it, then fix the broken word (`bmob` → `bomb`) with real vim edits —
-  `x`, `r`, `~`, `s`, `cw`, `ciw`. A correct word arms a bomb; drop it with `x`
-  and get out of the plus-shaped blast.
-- **`u` is your lives.** Undo rewinds one world tick — even death — but charges
-  are scarce and no undo crosses an explosion.
-
-### Motions
-
-| Keys | Effect |
-|---|---|
-| `h j k l` | step (bonking a wall still costs a turn) |
-| `5l`, `3j`… | counted motion — many tiles, one enemy turn |
-| `w` `b` `e` | hop between words of lettered tiles, soaring over gaps and enemies |
-| `f{c}` `F{c}` `t{c}` `T{c}` `;` `,` | dash along the row to letter `{c}` |
-| `0` `$` `gg` `G` | slide to row/column ends, sweeping up items |
-| `Ctrl-u` `Ctrl-d` | ride an updraft into the cloud layer / drop back down |
-| `i` | edit the code-tile underfoot |
-| `x` | drop an armed bomb |
-| `u` | rewind one tick |
-| `:` | free ex command line — `:help` `:map` `:hint` `:q` `:q!` |
-
-Flying over a **toad** (`w`/`e`/`f`…) flips it helpless for six turns; walk
-onto a flipped toad to squash it for +2 budget. The playfield reads like a
-buffer with `relativenumber`: the gutter counts rows for you (see 4 → type
-`4j`), the ruler counts columns, and a pending count lights up its landing
-tiles.
-
-### The world
-
-Boulders bomb open · steel blocks need a widened blast · starfield gaps can
-only be jumped by `w`/`f` motions · chevron one-way tiles only admit you moving
-that direction · bushes hide items (keystrokes, bomb radius, undo charges,
-extra bombs) · the glowing portal is the exit. Everything is rendered from a
-procedural 16×16 pixel-art sprite atlas — zombies shamble, bombs spark, the
-mage telegraphs its teleport with a rune circle.
-
-### The bestiary
-
-- **Zombie `Z`** — half-speed chaser. Punishes wasted keystrokes.
-- **Imp `&`** — drops its own bombs. Its blasts open rocks too; bait it into
-  mining for you, or into fragging its friends.
-- **Toad `Q`** — hops two tiles every third turn, clearing pits. Walking
-  can't shake it; a flight motion over it flips it onto its back.
-- **Mage `M`** — teleports on a readable 5-turn cycle and fires bolts down its
-  row and column. Never linger aligned with the rune.
-- **The linter `!`** — not a creature, a hazard: sweeps its whole row on a
-  six-turn cycle (three dark, two amber, then fire). Only the margins `|` at
-  the row ends are safe — `0` and `$` snap you to them from anywhere.
-
-Some enemies patrol fixed lanes; the free-roamers hunt.
-
-## Architecture
-
-TypeScript throughout (strict mode), bundled by Vite. The engine stays pure —
-no DOM — and notifies the UI through overridable `fx` hooks.
+TypeScript throughout (strict), bundled by Vite, zero runtime dependencies.
+The engine is pure logic — no DOM — and notifies the UI through overridable
+`fx` hooks. Everything you see is a procedural 16×16 pixel-art sprite atlas
+drawn to a canvas with a CRT shell.
 
 | Path | Role |
 |---|---|
-| `src/levels.ts` | 19 levels as ASCII maps + terminals, bushes, keycaps, linters, sky layers, budgets |
-| `src/engine/` | pure game logic — motions, terminals, bombs, AI, undo. No DOM. |
-| `src/render/sprites.ts` | procedural pixel-art atlas: 16×16 sprites as validated character grids |
-| `src/render/renderer.ts` | canvas draw loop: sprite animation, tweening, particles, shake, glow |
-| `src/ui/` | screens/menus, HUD + statusline, WebAudio synth, saves, code-tile editor |
-| `src/main.ts` | boot — wires fx hooks to sound and view effects |
-
-Enemies use a seeded RNG, so every level plays identically on every retry —
-plan like a puzzle, execute like a speedrun.
-
-## Tests
->>>>>>> d2e3178 (Checkpoint: story arc, motions v2, arsenal, and four new levels)
-
-```sh
-npx tsc --noEmit   # typecheck only
-npx vite --host    # dev server visible on your LAN
-```
-
-## Tests and guarantees
+| [`src/levels.ts`](src/levels.ts) | 19 levels as ASCII maps + terminals, bushes, keycaps, linters, sky layers, budgets |
+| [`src/engine/`](src/engine/) | Pure game logic: motions, terminals, bombs, AI, undo, deterministic ticks |
+| [`src/render/sprites.ts`](src/render/sprites.ts) | Procedural pixel-art atlas — every sprite is a validated character grid |
+| [`src/render/renderer.ts`](src/render/renderer.ts) | Canvas draw loop: animation, tweening, particles, shake, glow |
+| [`src/ui/`](src/ui/) | Menus, HUD/statusline, WebAudio synth, saves, the code-tile editor |
+| [`docs/`](docs/) | The full design bible — premise, mechanics, bestiary, levels, story, architecture |
 
 The tests are part of the design, not just safety rails:
 
-- `test/solve.test.ts` replays hand-authored keystroke scripts through the real
-  engine. Par is achievable by proof, and alternate routes must fit the budget.
-- `test/engine.test.ts` pins core movement, bonk, blast, hard-rock, and undo
-  rules.
-- `test/ui-smoke.test.ts` boots the app against a stub DOM and clears level 1
-  through the real keydown handler.
-- `test/sprites.test.ts` validates every sprite-grid in the procedural atlas.
+- [`test/solve.test.ts`](test/solve.test.ts) replays hand-authored keystroke
+  scripts through the real engine — **every level ships with a machine-checked
+  proof that par is achievable**.
+- [`test/engine.test.ts`](test/engine.test.ts) pins movement, bonk, blast,
+  and undo rules.
+- [`test/ui-smoke.test.ts`](test/ui-smoke.test.ts) boots the app against a
+  stub DOM and clears level 1 through the real keydown handler.
+- [`test/sprites.test.ts`](test/sprites.test.ts) validates every sprite grid
+  in the atlas.
 
-Progress saves to `localStorage` under `vimberman.save.v1`.
+Progress saves to `localStorage`. Deploys ship automatically:
+[`pages.yml`](.github/workflows/pages.yml) typechecks, tests, builds, and
+publishes to GitHub Pages on every push to `main`.
 
-## Deployment
+## Contributing
 
-`.github/workflows/pages.yml` runs on every push to `main`:
-
-1. `npm ci`
-2. `npx tsc --noEmit`
-3. `npm test`
-4. `npm run build`
-5. Upload `dist/` to GitHub Pages
-
-The Pages URL is the canonical playable build:
-
-<https://mikeldking.github.io/vimberman/>
-
-## Contributing notes
-
-Vimberman was built entirely with **Hermes Agent** and **Fable 5**, and the door
-is wide open for more chaos. PRs are welcome — especially PRs that make the game
-**unimaginably more fun**: new levels, absurd enemies, sharper tutorials,
-better juice, tastier sound, funnier terminal copy, smarter tests, or wild ideas
+Vimberman was built entirely with **Hermes Agent** and **Fable 5**, and the
+door is wide open for more chaos. PRs are welcome — especially ones that make
+the game **unimaginably more fun**: new levels, absurd enemies, sharper
+tutorials, better juice, tastier sound, funnier terminal copy, wilder ideas
 that somehow still fit the Vim/Bomberman premise.
 
-Vimberman works best when every addition preserves the core contract:
+The core contract, from [CONTRIBUTING.md](CONTRIBUTING.md):
 
 1. **Every keystroke is a decision.** No filler input.
-2. **Teach by doing.** One new trick should become load-bearing in the level that introduces it.
-3. **Efficiency is the score.** Budgets and pars should reward Vim fluency, not real-time reflexes.
+2. **Teach by doing.** A new trick becomes load-bearing in the level that introduces it.
+3. **Efficiency is the score.** Budgets reward Vim fluency, not reflexes.
 4. **Determinism makes it a puzzle.** If randomness changes retries, seed it and test it.
-5. **Fiction and mechanic should be the same object.** If a feature needs a paragraph of lore to justify it, simplify it.
+5. **Fiction and mechanic are the same object.** If a feature needs a paragraph of lore, simplify it.
 
-If you add a level, add or update a solver route so the CI proves it can be won.
+If you add a level, add a solver route so CI proves it can be won. If you
+enjoy the game, consider [sponsoring](https://github.com/sponsors/mikeldking)
+— it buys more levels and meaner little Vim jokes.
 
-## Status
+## License
 
-Playable browser prototype with a tested 13-level campaign, procedural sprite
-atlas, CRT canvas UI, GitHub Pages deployment, and design docs. The repo is
-ready for level iteration, balancing, polish, and more mean little Vim jokes.
+[MIT](LICENSE). Take the bombs. Learn the motions. Share both.
