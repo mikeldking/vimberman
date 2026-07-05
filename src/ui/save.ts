@@ -23,7 +23,7 @@ const SAVE_KEY = 'vimberman.save.v1';
  * reaching past a teaching level implies owning its keycap. */
 export const GROUP_LEVEL: Record<VocabGroup, number> = {
   core: 0, count: 2, find: 3, edit: 4, word: 5, line: 6, cw: 8, inner: 11, sky: 12,
-  mark: 14, match: 15, search: 16, dot: 17, macro: 20,
+  mark: 14, match: 15, search: 16, dot: 17, macro: 21,
 };
 
 function fresh(): SaveData {

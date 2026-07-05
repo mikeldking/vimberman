@@ -42,10 +42,14 @@ history and the `done:` notes in prior revisions of this file for the details.
 
 ## Parking lot (unranked, revisit now that 6.4 closed)
 
-- Arsenal showcase level — grep/sed exist as optional retrofits (L6/L8)
-  but no level makes a variant load-bearing; 4.2's note deferred this to
-  6.3, which shipped the dot level instead. Design bar: one level where
-  the WORD you craft is the route decision.
+- ~~Arsenal showcase level~~ — shipped 2026-07-05 as L18 CHOOSE YOUR WORDS:
+  three terminals (sad→sed / grip→grep / b0mb→bomb), three word-gated
+  bands, one exit. sed digs the plug shaft and never hurts you (speedrun,
+  par 15); grep is the row answer to a 7-wide triple-zombie corridor no
+  single plus-blast can cover; bomb does the plug-and-zombie shaft with
+  two drops, priced accordingly. Routes proven in solve tests. Note for
+  the next agent: blast rays are ABSORBED by the first `%` they break —
+  stacked plugs cannot be cleared by one radius-2 blast.
 - `S` shield bush (+2 iframes, once) — deferred from 4.4; add only when a
   level design wants a shield beat.
 - Level-shape variety: a 40-wide "one-liner" map (pure `0 $ f ;` fantasy), a

@@ -136,7 +136,7 @@ describe('ui smoke', () => {
       [7, 1, 5, 'land on every'],     // coins
       [10, 12, 9, 'stroke'],          // golf
       [16, 14, 1, 'stroke'],          // golf under a dot budget (DON'T REPEAT YOURSELF)
-      [17, 5, 7, 'scan head'],        // spark (the finale — index moves as levels land before it)
+      [18, 5, 7, 'scan head'],        // spark (the finale — index moves as levels land before it)
     ];
     for (const [idx, x, y, text] of tiles) {
       game.loadLevel(idx);

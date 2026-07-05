@@ -119,6 +119,10 @@ substitution, not an explosion:
   choice real: the sed opens the plug next to E without killing the
   col-leashed zombie you might have wanted dead. Alternatively a new
   "STREAM EDITOR" level in the 6.3 growth; whichever lands first.
+- **Showcase (shipped 2026-07-05)**: L18 CHOOSE YOUR WORDS is the
+  arsenal's load-bearing home — three terminals, three word-gated bands,
+  one exit; the crafted word IS the route decision. The sed lane is the
+  par proof of "the gentlest tool is also the cheapest to type."
 
 ---
 
