@@ -96,6 +96,38 @@ describe('ui smoke', () => {
     expect(game.state().mode).toBe('normal');
   });
 
+  it('drill mode: lists owned groups, locks the rest, and never touches the save', async () => {
+    // back out to the title (screen is SELECT after the earlier menu tests)
+    dom.key('Escape');
+    expect(dom.els.panel.innerHTML).toContain('PLAY');
+    // title order: CONTINUE (unlocked=2 by now), PLAY, DRILL, ...
+    dom.key('j'); dom.key('j'); dom.key('Enter');
+    expect(dom.els.panel.innerHTML).toContain('DRILL MODE');
+    expect(dom.els.panel.innerHTML).toContain('FOOTWORK'); // core is always owned
+    expect(dom.els.panel.innerHTML).toContain('LOCKED');   // most keycaps aren't
+    // a locked drill refuses to start
+    dom.key('j'); dom.key('Enter'); // 'count' — its keycap was never collected
+    expect(dom.els.panel.innerHTML).toContain('DRILL MODE');
+    dom.key('k');
+    const savedBefore = JSON.stringify(dom.store);
+    dom.key('Enter'); // start FOOTWORK
+    expect(dom.els.overlay.classList.contains('hidden')).toBe(true);
+    for (const k of 'lllllllllljjhhhhhhhhhhjjlllllllllljjhhhhhhhhhh') dom.key(k);
+    dom.frames(5);
+    expect(game.state().status).toBe('won');
+    await new Promise((r) => setTimeout(r, 500)); // clear card fires on a delay
+    expect(dom.els.panel.innerHTML).toContain('DRILL COMPLETE');
+    expect(dom.els.panel.innerHTML).not.toContain('LEVEL CLEAR');
+    // the whole excursion left the save byte-identical
+    expect(JSON.stringify(dom.store)).toBe(savedBefore);
+    dom.key('Enter');
+    expect(dom.els.panel.innerHTML).toContain('DRILL MODE');
+    expect(JSON.stringify(dom.store)).toBe(savedBefore);
+    // leaving drill select restores the campaign level list
+    dom.key('Escape');
+    expect(game.getLevels().length).toBe(20);
+  });
+
   it('renders each minigame goal line in the termbox', () => {
     // [level idx, tile x, tile y, goal text the overlay must show]
     const tiles: Array<[number, number, number, string]> = [

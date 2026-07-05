@@ -41,7 +41,9 @@ export function updateHud(): void {
     return;
   }
   const st = game.state();
-  $('hud-level').textContent = `L${String(ui.currentLevel).padStart(2, '0')} · ${st.lv.name}`;
+  $('hud-level').textContent = ui.drill
+    ? `DRILL · ${st.lv.name}`
+    : `L${String(ui.currentLevel).padStart(2, '0')} · ${st.lv.name}`;
   const rem = st.limit - st.keys;
   const frac = rem / st.limit;
   const keysEl = $('hud-keys');

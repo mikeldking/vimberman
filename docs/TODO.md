@@ -29,12 +29,18 @@ history and the `done:` notes in prior revisions of this file for the details.
 
 ## Remaining
 
-- [ ] **6.4 Drill mode.** Freeform practice: pick any owned motion group, get a
+- [x] **6.4 Drill mode.** Freeform practice: pick any owned motion group, get a
   procedurally-lite arena (static, no enemies, coin-style targets), no save
   impact. Entry from title menu. This is the "arcade excuse" for audience #1
   in premise.md.
+  done: 2026-07-05 — DRILL on the title menu → picker of 14 arenas (one per
+  vocab group, `src/ui/drills.ts`), listed once the group's keycap is owned.
+  Arenas are static K-coin rep tracks; end cards are save-neutral
+  (`ui.drill` guard in `showClear` + routing). Par proofs + invariants in
+  `test/drill.test.ts`; smoke flow + save-immutability in ui-smoke. Next
+  agent: drills assume core + their own group only — keep it that way.
 
-## Parking lot (unranked, revisit when 6.4 closes)
+## Parking lot (unranked, revisit now that 6.4 closed)
 
 - Arsenal showcase level — grep/sed exist as optional retrofits (L6/L8)
   but no level makes a variant load-bearing; 4.2's note deferred this to

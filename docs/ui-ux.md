@@ -15,13 +15,22 @@ global `keydown` handler. States:
 TITLE → SELECT → INTRO → GAME → (CLEAR | DEAD | FAIL) → back to SELECT/INTRO
                           ↕
                         PAUSE
+TITLE → DRILL → GAME → (CLEAR | DEAD | FAIL) → back to DRILL
 TITLE → HELP / SETTINGS → back to TITLE
 ```
 
-- **TITLE** — logo, PLAY / HOW TO PLAY / SETTINGS menu.
+- **TITLE** — logo, PLAY / DRILL / HOW TO PLAY / SETTINGS menu.
 - **SELECT** — level list with lock state, stars, best keystroke count,
   and par, navigated with `j`/`k`/`gg`/`G`/`Enter` — **the menus are vim
   too** (see below).
+- **DRILL** — practice-arena picker (docs/TODO.md 6.4, premise.md
+  audience #1). One static arena per vocabulary group (`src/ui/drills.ts`):
+  no enemies, no linters, no keycaps, coin `K` tiles marking the reps, and
+  **zero save impact** — `ui.drill` steers every end screen back here and
+  `showClear` is guarded so nothing persists. A drill is listed once its
+  group's keycap is owned; the arena rides at the end of the engine's
+  level set only while the drill runs (`showDrill`/`startLevel` reset it).
+  Arena solvability and par proofs live in `test/drill.test.ts`.
 - **HELP** — a static reference card of every motion (`showHelp`),
   reachable from the title screen, not gatekept behind gameplay.
 - **INTRO** — per-level card: level name, the one new technique
