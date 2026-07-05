@@ -2,6 +2,7 @@
 // vim keys, plays level 1 through the real keydown handler, and asserts the
 // clear screen + save state.
 import { describe, it, expect, beforeAll } from 'vitest';
+import { LEVELS } from '../src/levels';
 import { installDom, type StubDom } from './stubs';
 
 let dom: StubDom;
@@ -125,7 +126,7 @@ describe('ui smoke', () => {
     expect(JSON.stringify(dom.store)).toBe(savedBefore);
     // leaving drill select restores the campaign level list
     dom.key('Escape');
-    expect(game.getLevels().length).toBe(20);
+    expect(game.getLevels().length).toBe(LEVELS.length);
   });
 
   it('renders each minigame goal line in the termbox', () => {
