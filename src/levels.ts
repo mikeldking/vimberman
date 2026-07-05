@@ -561,6 +561,57 @@ export const LEVELS: LevelDef[] = [
     par: 43, limit: 76,
   },
   {
+    // the arsenal showcase (docs/arsenal.md): the WORD you craft is the route.
+    // Three terminals, three gated bands, one exit. sed digs the plug shaft
+    // and can't hurt you; grep is the only honest answer to a 7-wide zombie
+    // corridor no single plus-blast can cover; bomb does the plug-and-zombie
+    // shaft in one phase-timed drop. The grep corridor deliberately inverts
+    // the audit's patrolled-corridor rule: you never cross it patrolled —
+    // the sweep IS the door key.
+    name: 'CHOOSE YOUR WORDS',
+    teaches: 'the arsenal — the word IS the route',
+    intro: [
+      'Three terminals. Three words. Three doors. One exit.',
+      'sed digs rock and hurts nothing — stand on it, walk through.',
+      'grep sweeps its whole row wall-to-wall, but digs nothing.',
+      'bomb does both, if you time it. Pick your word. Commit.',
+    ],
+    map: [
+      '###############',
+      '#PT.**.T..*.T.#',
+      '##%####.####%##',
+      '##.####.####.##',
+      '##.####.####.##',
+      '##.#Z..Z..Z#Z##',
+      '##*######.##.##',
+      '##.######.##.##',
+      '##.######.##*##',
+      '#............E#',
+      '###############',
+    ],
+    terminals: {
+      '2,1': { broken: 'sad', target: 'sed', grants: 1, hint: 'l re — the cheapest word in the shop' },
+      '7,1': { broken: 'grip', target: 'grep', grants: 1, hint: 'll re — a handheld linter' },
+      '12,1': { broken: 'b0mb', target: 'bomb', grants: 2, hint: 'l ro — the generalist, priced accordingly' },
+    },
+    bushes: {
+      '4,1': { type: 'K', amt: 5 },
+      '5,1': { type: 'K', amt: 5 },
+      '10,1': { type: 'K', amt: 4 },
+      '2,6': { type: 'U', amt: 1 },
+      '12,8': { type: 'K', amt: 6 },
+    },
+    enemyOpts: {
+      '4,5': { leash: 'row' },
+      '7,5': { leash: 'row' },
+      '10,5': { leash: 'row' },
+      '12,5': { leash: 'col' },
+    },
+    hint: 'the cheapest word in the shop is three letters and hurts nobody.',
+    solution: 'l i l re x lll hhh G $',
+    par: 15, limit: 34,
+  },
+  {
     name: 'THE FINAL REFACTOR',
     // pinned to the index it had when its routes were authored — insertions
     // before it must not reshuffle the mage's dice

@@ -88,17 +88,25 @@ const ROUTES: Record<number, Record<string, string>> = {
     vault: 'l 3l i cw bomb <e> 2l x 2h 2j h k k 4l 3l i . 3l i . l 2j 2h x 2l x 2k h h l j j h 2h h 7l',
   },
   18: {
+    // the row answer: craft grep, feed it to the corridor, stroll the ash
+    grep: '6l i ll re jjj j x k k j k j j ll G $',
+    // the generalist, priced accordingly: drop one for the plug (fleeing
+    // the row), slam down to the freed zombie, drop two, wait out the fuse
+    // above the blast, then slam the cleared shaft
+    bomb: '$ h i l ro x hhh l h l ll G x kkk k j G l',
+  },
+  19: {
     // south arena: skip T1, G down the rail, ciw beside the mage
     safe: 'w w 3l j j h 2b 3h G ll ll i ciw bomb <e> ll x 4h h l h l l 7l k k',
     // hybrid: T1's two bombs, then the south wing skipping T2
     clever: 'w w ll i l ro 2l ~ l j j h 2b 3h G 6l x 4h h l h l l 7l k k',
   },
-  19: {
+  20: {
     // the senior flex: overshoot every count and let the walls brake —
     // proves slides clamp normally while bare taps stay refused
     clamp: '9j 9l 2k 2l 2j 2l 2k 2k 2h 2k 9l 9j',
   },
-  20: {
+  21: {
     // belt-and-suspenders: automate wing 2, hand-fly wing 3 (the linter
     // phases are tuned so THIS cadence threads them; full-manual dies)
     mixed: 'l qa l 2j 2l 2k 3l q @a l 2j 2l 2k 3l',
