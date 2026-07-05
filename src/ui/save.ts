@@ -23,10 +23,10 @@ const SAVE_KEY = 'vimberman.save.v1';
  * reaching past a teaching level implies owning its keycap. */
 export const GROUP_LEVEL: Record<VocabGroup, number> = {
   core: 0, count: 2, find: 3, edit: 4, word: 5, line: 6, cw: 8, inner: 11, sky: 12,
-  mark: 13, match: 14, search: 15, macro: 17,
+  mark: 14, match: 15, search: 16, macro: 18,
   // dot's teaching level doesn't exist yet (TODO 6.3 slots it) — until then no
   // save can auto-own it and no keycap grants it; engine/tests use setVocab(null)
-  dot: 18,
+  dot: 19,
 };
 
 function fresh(): SaveData {

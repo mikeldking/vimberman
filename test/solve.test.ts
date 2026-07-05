@@ -60,27 +60,32 @@ const ROUTES: Record<number, Record<string, string>> = {
     flytrap: 'l l 2l x <C-u> j k j k <C-d> 8l 8h <C-u> 6j 3h <C-d>',
   },
   13: {
+    // the under-pass: skip the cut entirely — ground loot, then thread the
+    // kite's col-patrol on the tick it bobs out of the lane
+    loot: '3l <C-u> j fc l k l <C-d> j l h h 2h k 3l <C-u> j ft k l',
+  },
+  14: {
     // the loot line: left-pocket undo, mark at the chute instead of the gate,
     // sweep the vault cache too, then walk the bomb east and wait out the
     // fuse west of the blast — a different mark placement IS the personality
     safe: 'l l j j h h k k l 3l ma 2j 2l `a 8l x 4h h l h l 4l 2j',
   },
-  14: {
+  15: {
     // the unhurried line: nook loot first (no fuse pressure), then the
     // closet, trapdoor out, and shuffling out the fuse in the top corridor
     safe: 'l l % j k % 2h 2j l 2l i l ro l x % h l h l h 7h 2j l 8l fE',
   },
-  15: {
+  16: {
     // the loot lane: sweep all three bushes along the same /bug chain
     greedy: 'l /bug<cr> 7l n n 5l n 3h fE',
   },
-  16: {
+  17: {
     // south arena: skip T1, G down the rail, ciw beside the mage
     safe: 'w w 3l j j h 2b 3h G ll ll i ciw bomb <e> ll x 4h h l h l l 7l k k',
     // hybrid: T1's two bombs, then the south wing skipping T2
     clever: 'w w ll i l ro 2l ~ l j j h 2b 3h G 6l x 4h h l h l l 7l k k',
   },
-  17: {
+  18: {
     // belt-and-suspenders: automate wing 2, hand-fly wing 3 (the linter
     // phases are tuned so THIS cadence threads them; full-manual dies)
     mixed: 'l qa l 2j 2l 2k 3l q @a l 2j 2l 2k 3l',

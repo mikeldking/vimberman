@@ -18,7 +18,7 @@ export const fx: FxHooks = {
   item() {}, rescue() {}, death() {}, win() {}, fail() {}, wantPause() {},
   enterTerm() {}, exitTerm() {}, telegraph() {}, tick() {}, collectBush() {},
   flip() {}, squash() {}, sweep() {}, rise() {}, drop() {}, keycap() {}, locked() {},
-  coin() {}, termReset() {}, sed() {},
+  coin() {}, termReset() {}, sed() {}, cut() {},
 };
 
 let LEVEL_SET: LevelDef[] = [];
@@ -203,6 +203,17 @@ export function loadLevel(idx: number): GameState {
   const pairs: Record<string, string> = {};
   buildPairs(idx, grid, 'ground', pairs);
   if (skyGrid) buildPairs(idx, skyGrid, 'sky', pairs);
+  if (skyGrid) {
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        if (skyGrid[y][x] === 'Y') {
+          const opts = (lv.enemyOpts ?? {})[x + ',' + y] ?? {};
+          enemies.push({ type: 'kite', x, y, aloft: true, ...opts });
+          skyGrid[y][x] = '.';
+        }
+      }
+    }
+  }
   const terminals: Record<string, Terminal> = {};
   for (const k in lv.terminals) {
     const t = lv.terminals[k];
@@ -294,7 +305,11 @@ const pat = (x: number, y: number): string => {
   const g = s.layer === 'sky' ? s.skyGrid! : s.grid;
   return g[y] ? g[y][x] ?? '#' : '#';
 };
-const enemyAt = (x: number, y: number): Enemy | undefined => state().enemies.find((e) => e.x === x && e.y === y);
+// ground entities only — every legacy call site is ground-semantic
+const enemyAt = (x: number, y: number): Enemy | undefined =>
+  state().enemies.find((e) => !e.aloft && e.x === x && e.y === y);
+const kiteAt = (x: number, y: number): Enemy | undefined =>
+  state().enemies.find((e) => e.aloft && e.x === x && e.y === y);
 const bombAt = (x: number, y: number): Bomb | undefined => state().bombs.find((b) => b.x === x && b.y === y);
 const onPlayer = (x: number, y: number): boolean => state().player.x === x && state().player.y === y;
 const flippedToad = (e: Enemy): boolean => e.type === 'toad' && (e.flip ?? 0) > 0;
@@ -395,9 +410,16 @@ export function rescue(): void {
   let clear = false;
   const oldest = Math.max(0, s.history.length - 1 - RESCUE_LOOKBACK);
   for (let i = s.history.length - 1; i >= oldest; i--) {
-    const d = JSON.parse(s.history[i]) as { p: { x: number; y: number }; en: Array<{ x: number; y: number }> };
-    // "clear" = no enemy within a step of the player, so the grace window can't be closed instantly
-    if (!d.en.some((e) => Math.abs(e.x - d.p.x) + Math.abs(e.y - d.p.y) <= 1)) { idx = i; clear = true; break; }
+    const d = JSON.parse(s.history[i]) as {
+      p: { x: number; y: number };
+      en: Array<{ x: number; y: number; aloft?: boolean }>;
+      layer?: string;
+    };
+    // "clear" = no same-layer enemy within a step of the player, so the
+    // grace window can't be closed instantly
+    const aloftThen = (d.layer ?? 'ground') === 'sky';
+    if (!d.en.some((e) => (e.aloft ?? false) === aloftThen
+      && Math.abs(e.x - d.p.x) + Math.abs(e.y - d.p.y) <= 1)) { idx = i; clear = true; break; }
   }
   restore(s.history[idx]);
   s.history = s.history.slice(0, idx + 1);
@@ -420,7 +442,18 @@ function squashToad(t: Enemy): void {
 // flip every toad strictly inside the horizontal span (x0, x1) on row y
 function flipToadsAlong(x0: number, x1: number, y: number): void {
   const s = state();
-  if (s.layer !== 'ground') return;
+  if (s.layer !== 'ground') {
+    // aloft, the same swept interval cuts kite strings (§5b): killed
+    // outright, no corpse, no refund — it was a comment
+    const [a, b] = x0 < x1 ? [x0, x1] : [x1, x0];
+    const cut = s.enemies.filter((e) => e.aloft && e.y === y && e.x > a && e.x < b);
+    if (cut.length) {
+      s.enemies = s.enemies.filter((e) => !cut.includes(e));
+      s.echo = cut.length > 1 ? cut.length + ' strings cut' : 'string cut — the TODO drifts away';
+      fx.cut(cut.length);
+    }
+    return;
+  }
   const [a, b] = x0 < x1 ? [x0, x1] : [x1, x0];
   let n = 0;
   for (const e of s.enemies) {
@@ -513,6 +546,7 @@ function explode(initial: Bomb[]): void {
   // sed tiles are deliberately NOT in the kill set — substitution, not fire
   const hit = new Set([...plus, ...beams].map(([x, y]) => x + ',' + y));
   s.enemies = s.enemies.filter((e) => {
+    if (e.aloft) return true; // bombs are a ground phenomenon
     if (!hit.has(e.x + ',' + e.y)) return true;
     if (e.type === 'mage' && e.immune) return true;
     return false;
@@ -571,7 +605,7 @@ function sweepLinters(): void {
       if (!swept.has(t[0] + ',' + t[1])) { swept.add(t[0] + ',' + t[1]); all.push(t); }
     }
   }
-  s.enemies = s.enemies.filter((e) => !swept.has(e.x + ',' + e.y));
+  s.enemies = s.enemies.filter((e) => e.aloft || !swept.has(e.x + ',' + e.y));
   s.projectiles = s.projectiles.filter((p) => !swept.has(p.x + ',' + p.y));
   fx.sweep(all);
   if (s.layer === 'ground' && swept.has(s.player.x + ',' + s.player.y)) hitPlayer('swept by the linter');
@@ -745,6 +779,40 @@ function toadTick(e: Enemy): void {
   const moves: Array<[number, number]> = horizFirst ? [[dx, 0], [0, dy]] : [[0, dy], [dx, 0]];
   for (const [mx, my] of moves) if (toadHop(e, mx, my)) return;
 }
+// kites (docs/new-mechanics.md §5b): full speed every tick, greedy chase,
+// cross open air, blocked only by thunderheads. Wind never moves them.
+function kiteOk(x: number, y: number): boolean {
+  const s = state();
+  const c = s.skyGrid && s.skyGrid[y] ? s.skyGrid[y][x] ?? '#' : '#';
+  return c !== '#';
+}
+function kiteStep(e: Enemy, dx: number, dy: number): boolean {
+  if (dx === 0 && dy === 0) return false;
+  const x = e.x + dx;
+  const y = e.y + dy;
+  if (!kiteOk(x, y) || kiteAt(x, y)) return false;
+  e.x = x;
+  e.y = y;
+  return true;
+}
+function kiteTick(e: Enemy): void {
+  const s = state();
+  if (e.leash) {
+    e.dir = e.dir || -1;
+    const vert = e.leash === 'col';
+    for (const d of [e.dir, -e.dir]) {
+      if (kiteStep(e, vert ? 0 : d, vert ? d : 0)) { e.dir = d; return; }
+    }
+    return;
+  }
+  const p = s.player;
+  const dx = Math.sign(p.x - e.x);
+  const dy = Math.sign(p.y - e.y);
+  const horizFirst = Math.abs(p.x - e.x) >= Math.abs(p.y - e.y);
+  const moves: Array<[number, number]> = horizFirst ? [[dx, 0], [0, dy]] : [[0, dy], [dx, 0]];
+  for (const [mx, my] of moves) if (kiteStep(e, mx, my)) return;
+}
+
 function moveProjectiles(): void {
   const s = state();
   const keep: typeof s.projectiles = [];
@@ -787,15 +855,16 @@ function tick(): void {
     if (e.type === 'zombie') zombieTick(e);
     else if (e.type === 'imp') impTick(e);
     else if (e.type === 'toad') toadTick(e);
+    else if (e.type === 'kite') kiteTick(e);
     else mageTick(e);
     if (s.status !== 'play') { fx.tick(); return; }
   }
-  if (s.layer === 'ground') {
-    for (const e of s.enemies) {
-      if (onPlayer(e.x, e.y) && !flippedToad(e)) {
-        hitPlayer('slain by the ' + e.type);
-        if (s.status !== 'play') { fx.tick(); return; }
-      }
+  // contact is same-layer only: kites touch aloft players, walkers grounded
+  for (const e of s.enemies) {
+    if ((e.aloft ?? false) !== (s.layer === 'sky')) continue;
+    if (onPlayer(e.x, e.y) && !flippedToad(e)) {
+      hitPlayer('slain by the ' + e.type);
+      if (s.status !== 'play') { fx.tick(); return; }
     }
   }
   if (s.player.iframes > 0) s.player.iframes--;
@@ -881,7 +950,7 @@ function singleStep(dx: number, dy: number): void {
   const y = p.y + dy;
   const ground = s.layer === 'ground';
   if (!terrainOk(x, y, dx, dy) || (ground && bombAt(x, y))) { bonk(); return; }
-  const e = ground ? enemyAt(x, y) : undefined;
+  const e = ground ? enemyAt(x, y) : kiteAt(x, y);
   if (e && !flippedToad(e)) { hitPlayer('walked into the ' + e.type); if (s.status === 'play') tick(); return; }
   if (e) squashToad(e);
   p.x = x; p.y = y;
@@ -904,7 +973,7 @@ function slide(dx: number, dy: number, max: number): void {
         if (!flippedToad(e)) break;
         squashToad(e);
       }
-    }
+    } else if (kiteAt(x, y)) break; // slides stop short of a kite
     p.x = x; p.y = y; moved++;
     enterTile();
     if (s.status !== 'play') return; // won or died mid-slide
@@ -935,7 +1004,7 @@ function landAt(x: number, y: number, dx: number, dy: number): boolean {
   const s = state();
   const p = s.player;
   const ground = s.layer === 'ground';
-  const foe = ground ? enemyAt(x, y) : undefined;
+  const foe = ground ? enemyAt(x, y) : kiteAt(x, y);
   if (foe && !flippedToad(foe)) return false;
   if (!terrainOk(x, y, dx, dy) || (ground && bombAt(x, y))) return false;
   if (flightBlocked(p.x, x, y)) return false;

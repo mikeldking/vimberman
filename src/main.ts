@@ -60,6 +60,10 @@ game.fx.squash = () => {
   toast(game.state().echo);
 };
 game.fx.sweep = (tiles) => { snd.sweep(); kick(3); addSweep(tiles); };
+game.fx.cut = (n) => {
+  snd.sweep();
+  toast(n > 1 ? `${n} strings cut` : 'string cut — the TODO drifts away');
+};
 game.fx.sed = (tiles) => {
   snd.solved(); // a substitution, not a boom — no shake
   for (const [x, y] of tiles) sparkle(x, y, '#7ce9a2');

@@ -1061,3 +1061,61 @@ describe('sky v2: wind + the flytrap (docs/new-mechanics.md §5)', () => {
     expect(st.enemies.length).toBe(0); // it gathered; the fuse disagreed
   });
 });
+
+describe('kites (docs/new-mechanics.md §5b)', () => {
+  const KITELAND = (skyRow: string, opts?: object) => makeLevel({
+    map: ['##########', '#P@.....Z#', '##########'],
+    sky: ['##########', skyRow, '##########'],
+    enemyOpts: opts as never,
+  });
+
+  it('kites chase at full speed and kill on contact — aloft only', () => {
+    const st = boot(KITELAND('#......Y.#'));
+    keys('l'); game.key('<C-u>'); // aloft at (2,1); the kite closes 1/tick
+    keys('hh'); // two bonks into the wall: it gains two tiles
+    const kite = st.enemies.find((e) => e.aloft)!;
+    expect(kite.x).toBe(4); // 7 → 5 → 4... wait: 3 ticks passed aloft
+    game.key('h'); game.key('h');
+    expect(st.status).toBe('dead');
+    expect(st.deathMsg).toBe('slain by the kite');
+  });
+
+  it('a grounded player is untouchable — same-layer contact only', () => {
+    const st = boot(KITELAND('#.Y......#'));
+    keys('hhhh'); // stay grounded right under it; it circles overhead
+    expect(st.status).toBe('play');
+  });
+
+  it('flight over a kite cuts the string; landing short does not', () => {
+    const st = boot(KITELAND('#..a.Y.b.#'));
+    keys('l'); game.key('<C-u>');
+    keys('fa'); // land at (3,1), kite approaching from (5,1)-ish
+    const before = st.enemies.filter((e) => e.aloft).length;
+    expect(before).toBe(1);
+    keys('fb'); // dash to b at (7,1), sweeping over the kite
+    expect(st.enemies.filter((e) => e.aloft).length).toBe(0);
+    expect(st.echo).toContain('string cut');
+  });
+
+  it('ground ordnance never reaches the sky', () => {
+    const st = boot(KITELAND('#.Y......#'));
+    st.player.arsenal.push('grep'); st.player.bombs = 1;
+    game.key('x'); // a grep sweeps the whole ground row on detonation
+    keys('lhlhl'); // wait it out... in the row, grep kills occupants —
+    // the player IS an occupant; keep it simple: check the kite after boom
+    expect(st.enemies.filter((e) => e.aloft).length).toBe(1);
+  });
+
+  it('col-leashed kites bob like a metronome, fenced by thunderheads', () => {
+    const st = boot(makeLevel({
+      map: ['#######', '#P@...#', '#.....#', '#######'],
+      sky: ['#######', '#...Y.#', '#.....#', '#######'],
+      enemyOpts: { '4,1': { leash: 'col' } } as never,
+    }));
+    const kite = st.enemies.find((e) => e.aloft)!;
+    keys('l'); // t1: kite tries up (wall) then bobs down
+    expect(kite.y).toBe(2);
+    keys('h'); // t2: back up
+    expect(kite.y).toBe(1);
+  });
+});

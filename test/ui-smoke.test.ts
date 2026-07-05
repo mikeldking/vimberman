@@ -99,7 +99,7 @@ describe('ui smoke', () => {
       [5, 7, 5, 'purge every'],       // clean
       [7, 1, 5, 'land on every'],     // coins
       [10, 12, 9, 'stroke'],          // golf
-      [15, 5, 7, 'scan head'],        // spark (the finale — index moves as levels land before it)
+      [16, 5, 7, 'scan head'],        // spark (the finale — index moves as levels land before it)
     ];
     for (const [idx, x, y, text] of tiles) {
       game.loadLevel(idx);

@@ -90,7 +90,7 @@ export interface LevelDef {
   limit: number;
 }
 
-export type EnemyType = 'zombie' | 'imp' | 'mage' | 'toad';
+export type EnemyType = 'zombie' | 'imp' | 'mage' | 'toad' | 'kite';
 export type MageState = 'cool' | 'tele' | 'port';
 
 export interface Enemy {
@@ -112,6 +112,8 @@ export interface Enemy {
   hop?: number;
   /** toads: ticks left belly-up; 0/undefined = upright */
   flip?: number;
+  /** kites: true — this enemy lives on the sky layer (docs/new-mechanics §5b) */
+  aloft?: boolean;
 }
 
 export interface Bomb {
@@ -289,6 +291,8 @@ export interface FxHooks {
   sweep(tiles: Array<[number, number]>): void;
   /** a sed terraformer ran its substitution over these tiles */
   sed(tiles: Array<[number, number]>): void;
+  /** a flight cut n kite strings */
+  cut(n: number): void;
   /** rose to / dropped from the cloud layer */
   rise(): void;
   drop(): void;

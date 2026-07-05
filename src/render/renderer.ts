@@ -341,6 +341,17 @@ function drawFindTargets(st: ReturnType<typeof game.state>, now: number): void {
   ctx.restore();
 }
 
+// kites are glyph-drawn: a diamond on a taut string, cyan against the cloud
+function drawKite(e: Enemy, now: number, alpha: number): void {
+  const t = tween(e);
+  const bob = 0.06 * Math.sin(now / 300 + e.x);
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  glyph('◆', t.x, t.y - 0.1 + bob, '#9fd8e8', 0.5, 8);
+  glyph('╲', t.x + 0.18, t.y + 0.3 + bob, '#6a93a3', 0.3);
+  ctx.restore();
+}
+
 function drawEnemy(e: Enemy, now: number, alpha = 1): void {
   const anim2 = Math.floor(now / 320) % 2;
   const t = tween(e);
@@ -452,7 +463,7 @@ function draw(now: number): void {
   }
 
   // enemies (ground layer)
-  for (const e of st.enemies) drawEnemy(e, now);
+  for (const e of st.enemies) if (!e.aloft) drawEnemy(e, now);
   ctx.restore(); // end ground pass
 
   // ---- sky pass ----
@@ -462,6 +473,7 @@ function draw(now: number): void {
       drawTerrain(st, st.skyGrid, now, true);
       drawGridlines(st);
       drawFindTargets(st, now);
+      for (const e of st.enemies) if (e.aloft) drawKite(e, now, 1);
       // the welcoming committee, seen through the cloud floor — you must be
       // able to track your landing (docs/new-mechanics.md, sky rendering)
       for (const e of st.enemies) drawEnemy(e, now, 0.35);
@@ -480,6 +492,8 @@ function draw(now: number): void {
           else sprite(sprites.cloud, x, y);
         }
       }
+      // a route you can't pre-read is a trap: kites silhouette too (§5d)
+      for (const e of st.enemies) if (e.aloft) drawKite(e, now, 0.35);
     }
     ctx.restore();
   }

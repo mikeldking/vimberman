@@ -401,6 +401,39 @@ export const LEVELS: LevelDef[] = [
     par: 9, limit: 26,
   },
   {
+    name: 'CUMULUS GOLF',
+    teaches: 'kites — flight cuts the string',
+    intro: [
+      'A kite rides the middle air. Full speed, never blinks, and',
+      'only thunderheads slow it down. Fly over it — f, w, t —',
+      'and the string is cut. Or time its patrol and slip past.',
+      'The exit is up there too. Nothing says you must come down.',
+    ],
+    map: [
+      '###############',
+      '#P..@#...@.####',
+      '#.*..#*.*.*####',
+      '###############',
+    ],
+    sky: [
+      '###############',
+      '#....##......E#',
+      '#......cu.Y.t.#',
+      '###############',
+    ],
+    terminals: {},
+    bushes: {
+      '2,2': { type: 'K', amt: 4 },
+      '6,2': { type: 'K', amt: 6 },
+      '8,2': { type: 'K', amt: 8 },
+      '10,2': { type: 'U', amt: 1 },
+    },
+    enemyOpts: { '10,2': { leash: 'col' } },
+    hint: 'the word is c-u-t. the last dash is the scissors.',
+    solution: '3l <C-u> j fc ft k l',
+    par: 10, limit: 30,
+  },
+  {
     name: 'BOOKMARKED',
     teaches: 'm{a} `{a} — bookmarks',
     intro: [
