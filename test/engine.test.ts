@@ -1071,11 +1071,11 @@ describe('kites (docs/new-mechanics.md §5b)', () => {
 
   it('kites chase at full speed and kill on contact — aloft only', () => {
     const st = boot(KITELAND('#......Y.#'));
-    keys('l'); game.key('<C-u>'); // aloft at (2,1); the kite closes 1/tick
-    keys('hh'); // two bonks into the wall: it gains two tiles
+    keys('l'); game.key('<C-u>'); // 2 ticks: the kite closes 7 → 5
+    keys('hh'); // two bonks into the wall: it closes 5 → 3, adjacent
     const kite = st.enemies.find((e) => e.aloft)!;
-    expect(kite.x).toBe(4); // 7 → 5 → 4... wait: 3 ticks passed aloft
-    game.key('h'); game.key('h');
+    expect(kite.x).toBe(3);
+    game.key('h'); // one more tick: it lands on you
     expect(st.status).toBe('dead');
     expect(st.deathMsg).toBe('slain by the kite');
   });
@@ -1087,12 +1087,12 @@ describe('kites (docs/new-mechanics.md §5b)', () => {
   });
 
   it('flight over a kite cuts the string; landing short does not', () => {
-    const st = boot(KITELAND('#..a.Y.b.#'));
+    // col-leashed in a one-row sky: fenced above and below, a statue
+    const st = boot(KITELAND('#..a.Y.b.#', { '5,1': { leash: 'col' } }));
     keys('l'); game.key('<C-u>');
-    keys('fa'); // land at (3,1), kite approaching from (5,1)-ish
-    const before = st.enemies.filter((e) => e.aloft).length;
-    expect(before).toBe(1);
-    keys('fb'); // dash to b at (7,1), sweeping over the kite
+    keys('fa'); // land at (3,1) — the kite two tiles ahead, untouched
+    expect(st.enemies.filter((e) => e.aloft).length).toBe(1);
+    keys('fb'); // dash to b at (7,1), sweeping straight over it
     expect(st.enemies.filter((e) => e.aloft).length).toBe(0);
     expect(st.echo).toContain('string cut');
   });
