@@ -337,9 +337,25 @@ and is meant to be executed **one item at a time** by whoever picks it up next
   10) and ends by dropping straight onto E; alternate route = the full
   flytrap loop (bomb by the updraft, hover-dance, top-shelf loot sweep, 21 ≤
   26). 5 new wind/flytrap tests. 133/133 pass.
-- [ ] **5.3 New cloud level "CUMULUS GOLF" (ground+sky interleaved).**
+- [x] **5.3 New cloud level "CUMULUS GOLF" (ground+sky interleaved).**
   (blocked: 5.2) Mid-difficulty, multiple rises/drops, the sky-native enemy
   debuts here (leashed first, per the threat-ladder rule).
+  done: 2026-07-04 — kites landed per new-mechanics §5b: layered enemies
+  (`Enemy.aloft`, `enemyAt` is now ground-only + `kiteAt`), full-speed greedy
+  chase blocked only by thunderheads, same-layer contact (contact loop is
+  layer-aware for ALL enemies now), ground ordnance (blasts/beams/linters)
+  never reaches the sky, aloft flights CUT strings via the flipToadsAlong
+  sky branch (fx.cut, "the TODO drifts away"), rescue scan same-layer only,
+  kites glyph-rendered aloft + silhouetted from the ground (pre-read rule).
+  Level 13 CUMULUS GOLF inserted after HEAD IN THE CLOUDS (renumber sweep:
+  GROUP_LEVEL mark/match/search/macro → 14/15/16/18, dot placeholder 19,
+  ROUTES +1, smoke spark idx 16): sealed ground vault pocket reachable only
+  from the sky, col-leashed kite bobbing across the lane, the word c-u-t as
+  f-targets — the last dash is the scissors. Speedrun cuts (par 10); loot
+  route threads UNDER the kite on its off-tick instead. NOTE: this iteration
+  survived a mid-flight upstream history rewrite — recovered by finishing
+  the user's in-progress pull-rebase; their "loop iteration 5.3"/"test"
+  checkpoint commits of in-flight work are kept in history. 140/140 pass.
 
 ## Phase 6 — Campaign growth & curriculum tightening
 

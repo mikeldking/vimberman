@@ -1072,10 +1072,12 @@ describe('kites (docs/new-mechanics.md §5b)', () => {
   it('kites chase at full speed and kill on contact — aloft only', () => {
     const st = boot(KITELAND('#......Y.#'));
     keys('l'); game.key('<C-u>'); // 2 ticks: the kite closes 7 → 5
-    keys('hh'); // two bonks into the wall: it closes 5 → 3, adjacent
+    // the first aloft h is a legal step to x1, the second bonks the wall —
+    // either way the kite closes 5 → 3
+    keys('hh');
     const kite = st.enemies.find((e) => e.aloft)!;
     expect(kite.x).toBe(3);
-    game.key('h'); // one more tick: it lands on you
+    keys('hh'); // two more ticks: it closes and lands on you
     expect(st.status).toBe('dead');
     expect(st.deathMsg).toBe('slain by the kite');
   });

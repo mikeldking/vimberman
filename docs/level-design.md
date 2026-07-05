@@ -1,6 +1,6 @@
 # Level Design
 
-Vimberman has seventeen levels, and they are not just seventeen maps — they're
+Vimberman has eighteen levels, and they are not just eighteen maps — they're
 a vim curriculum with a Bomberman skin. Every level introduces **exactly
 one** new motion or concept (`src/levels.ts` → `teaches`), stated once on the
 intro card (`intro: [...]`), and that level's layout is built to require
@@ -26,11 +26,12 @@ authoring rules, see `docs/level-audit.md`; for the keycap unlock system,
 | 10 | MIND THE MARGINS | `0`/`$` as linter anchors | — | 15 / 34 | Linter rows `!` `\|` | 2 |
 | 11 | WARPED WORDS | `~` and `ciw`; hard rock `&` | `inner` | 112 / 165 | Mage (free-roam) | 1 |
 | 12 | HEAD IN THE CLOUDS | `Ctrl-u` / `Ctrl-d` | `sky` | 10 / 26 | The sky layer; zombies ×4 | 2 |
-| 13 | BOOKMARKED | `m{a}` / `` `{a} `` — marks | `mark` | 22 / 52 | The vault (a sealed one-way pocket) | 2 |
-| 14 | BALANCED BRACKETS | `%` — matching bracket | `match` | 27 / 62 | The trapdoor closet; lint zombie | 2 |
-| 15 | GREP | `/{word}` `n` — search | `search` | 8 / 20 | Moat bands (full gap rows) | 2 |
-| 16 | THE FINAL REFACTOR | everything, two wings | — | 36 / 60 | all threats | 3 |
-| 17 | AUTOMATE YOURSELF | `q`/`@` — macros (epilogue) | `macro` | 14 / 26 | Phased linter wings; manual play dies | 2 |
+| 13 | CUMULUS GOLF | kites — flight cuts the string | — | 10 / 30 | Kite (sky-native, full speed); sky exit | 2 |
+| 14 | BOOKMARKED | `m{a}` / `` `{a} `` — marks | `mark` | 22 / 52 | The vault (a sealed one-way pocket) | 2 |
+| 15 | BALANCED BRACKETS | `%` — matching bracket | `match` | 27 / 62 | The trapdoor closet; lint zombie | 2 |
+| 16 | GREP | `/{word}` `n` — search | `search` | 8 / 20 | Moat bands (full gap rows) | 2 |
+| 17 | THE FINAL REFACTOR | everything, two wings | — | 36 / 60 | all threats | 3 |
+| 18 | AUTOMATE YOURSELF | `q`/`@` — macros (epilogue) | `macro` | 14 / 26 | Phased linter wings; manual play dies | 2 |
 
 "Routes proven" = distinct scripted lines asserted in `test/solve.test.ts`
 (speedrun always; safe/clever/greedy where the map supports them).
@@ -45,9 +46,10 @@ dash-to-char (`f`/`F`) → bomb-crafting basics (`i x r`) → word-hopping
 (`w b e`) → line/file jumps (`0 $ gg G`) → flight-as-weapon (toads) →
 whole-word replace (`cw`) → irreversible commitment (one-way tiles) →
 line anchors under fire (linter rows) → precision edits (`~`, `ciw`) →
-the vertical axis (`Ctrl-u`/`Ctrl-d`) → bookmarks as un-commitment
+the vertical axis (`Ctrl-u`/`Ctrl-d`) → flight as scissors (kites, the
+sky's toad lesson at lethal stakes) → bookmarks as un-commitment
 (`m`/`` ` ``, the vault) → paired doors (`%`, the trapdoor) → search as
-transit (`/`+`n`, the moats) → synthesis (16, THE FINAL REFACTOR — adds
+transit (`/`+`n`, the moats) → synthesis (17, THE FINAL REFACTOR — adds
 nothing new) → the epilogue: automation (`q`/`@`, one turn per wing).
 
 **Threat ladder** (what's hunting you):

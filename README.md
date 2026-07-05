@@ -44,7 +44,7 @@ that makes the game **unimaginably more fun**.
 
 > Bombs · zombies · and the world's most portable skill.
 =======
-A Bomberman-like for the browser where every move is a vim motion. Seventeen
+A Bomberman-like for the browser where every move is a vim motion. Eighteen
 levels that teach vim progressively — from `hjkl` to `ciw` and `Ctrl-u` —
 under bomb fuses, keystroke budgets, and enemies that move only when you type.
 Motions are Metroid-style powerups: collect a keycap `?` to add its motion to
@@ -236,7 +236,7 @@ no DOM — and notifies the UI through overridable `fx` hooks.
 
 | Path | Role |
 |---|---|
-| `src/levels.ts` | 17 levels as ASCII maps + terminals, bushes, keycaps, linters, sky layers, budgets |
+| `src/levels.ts` | 18 levels as ASCII maps + terminals, bushes, keycaps, linters, sky layers, budgets |
 | `src/engine/` | pure game logic — motions, terminals, bombs, AI, undo. No DOM. |
 | `src/render/sprites.ts` | procedural pixel-art atlas: 16×16 sprites as validated character grids |
 | `src/render/renderer.ts` | canvas draw loop: sprite animation, tweening, particles, shake, glow |
