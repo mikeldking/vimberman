@@ -173,6 +173,10 @@ function drawTerrain(st: ReturnType<typeof game.state>, grid: string[][], now: n
         if (c === '*') sprite(sprites.bush[(h + anim2slow) % 2], x, y);
         else if (c >= 'a' && c <= 'z') glyph(c, x, y - 0.04, '#4a7a8c', 0.42);
         else if (c === '|') drawMargin(x, y);
+        else if (c === 'E') {
+          const pulse = 8 + 5 * Math.sin(now / 260);
+          sprite(sprites.exit[anim2slow], x, y, { glow: pulse, glowColor: '#d8f4fc' });
+        }
         continue;
       }
       if (c === '#') { sprite(sprites.wall, x, y); continue; }
@@ -341,14 +345,60 @@ function drawFindTargets(st: ReturnType<typeof game.state>, now: number): void {
   ctx.restore();
 }
 
-// kites are glyph-drawn: a diamond on a taut string, cyan against the cloud
+// kites are path-drawn, not sprites: a diamond frame + crossed spars + a
+// bowed tail, in a hot ember color that reads against pale cloud and never
+// collides with the updraft's cyan (docs/new-mechanics.md §5b)
 function drawKite(e: Enemy, now: number, alpha: number): void {
   const t = tween(e);
-  const bob = 0.06 * Math.sin(now / 300 + e.x);
+  const bob = 0.08 * Math.sin(now / 260 + e.x * 1.7);
+  const cx = (t.x + 0.5) * CELL;
+  const cy = (t.y + 0.42 + bob) * CELL;
+  const r = CELL * 0.26;
   ctx.save();
   ctx.globalAlpha = alpha;
-  glyph('◆', t.x, t.y - 0.1 + bob, '#9fd8e8', 0.5, 8);
-  glyph('╲', t.x + 0.18, t.y + 0.3 + bob, '#6a93a3', 0.3);
+
+  // taut string + two tail bows, trailing below
+  ctx.strokeStyle = 'rgba(255, 217, 160, 0.7)';
+  ctx.lineWidth = Math.max(1, CELL * 0.02);
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + r * 1.3);
+  ctx.lineTo(cx + r * 0.5, cy + r * 1.3 + CELL * 0.3);
+  ctx.stroke();
+  for (let i = 0; i < 2; i++) {
+    const bx = cx + r * 0.3 * (i + 1);
+    const by = cy + r * 1.3 + CELL * (0.14 + i * 0.14);
+    ctx.beginPath();
+    ctx.arc(bx, by, CELL * 0.028, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffd9a0';
+    ctx.fill();
+  }
+
+  // diamond body
+  ctx.shadowBlur = 10;
+  ctx.shadowColor = '#ff5a33';
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r * 1.3);
+  ctx.lineTo(cx + r, cy);
+  ctx.lineTo(cx, cy + r * 1.3);
+  ctx.lineTo(cx - r, cy);
+  ctx.closePath();
+  ctx.fillStyle = '#ff5a33';
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = '#ffd9a0';
+  ctx.lineWidth = Math.max(1, CELL * 0.035);
+  ctx.stroke();
+
+  // crossed spars
+  ctx.strokeStyle = '#c73f1e';
+  ctx.lineWidth = Math.max(1, CELL * 0.025);
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r * 1.3);
+  ctx.lineTo(cx, cy + r * 1.3);
+  ctx.moveTo(cx - r, cy);
+  ctx.lineTo(cx + r, cy);
+  ctx.stroke();
+
   ctx.restore();
 }
 
@@ -476,7 +526,7 @@ function draw(now: number): void {
       for (const e of st.enemies) if (e.aloft) drawKite(e, now, 1);
       // the welcoming committee, seen through the cloud floor — you must be
       // able to track your landing (docs/new-mechanics.md, sky rendering)
-      for (const e of st.enemies) drawEnemy(e, now, 0.35);
+      for (const e of st.enemies) if (!e.aloft) drawEnemy(e, now, 0.35);
       for (const b of st.bombs) {
         const f = (b.fuse <= 2 ? sprites.bombUrgent : sprites.bomb)[0];
         sprite(f, b.x, b.y, { alpha: 0.35 });

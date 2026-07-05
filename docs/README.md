@@ -26,7 +26,7 @@ Design expansions (the v2 rework):
 
 7. **[level-audit.md](level-audit.md)** — the designer audit of the
    original ten levels and the multi-path solvability framework that
-   grew the campaign to its current twenty levels.
+   grew the campaign to its current 21 levels.
 8. **[new-mechanics.md](new-mechanics.md)** — toads (flippable enemies),
    the linter sweep (`0`/`$` with teeth), the relative-number gutter, and
    the cloud layer (`Ctrl-u`/`Ctrl-d`).
@@ -37,21 +37,28 @@ Design expansions (the v2 rework):
     puzzle roster: repair, lint purge, cache grab, code golf, and the
     scan head, plus authoring/tuning rules and the future pipeline.
 
-11. **[story.md](story.md)** — the narrative spine: The Cursor, The
+11. **[campaign-playthrough-audit.md](campaign-playthrough-audit.md)** —
+    the current level-by-level proof ledger: exact pars, route counts, and
+    strategic design follow-up.
+
+12. **[terminal-audit.md](terminal-audit.md)** — every authored code-tile
+    prompt and its executable intended solution.
+
+13. **[story.md](story.md)** — the narrative spine: The Cursor, The
     Legacy (the rot as antagonist), the three-chapter arc, tone rules,
     and the verbatim copy inventory for chapter cards and Legacy voice.
 
-12. **[motions-v2.md](motions-v2.md)** — spec for the five motions-v2
+14. **[motions-v2.md](motions-v2.md)** — spec for the five motions-v2
     additions: marks, `%` bracket-jump, `.` dot-repeat, `/` search, and
     `q`/`@` macros — each with a named puzzle hook, costs, data shapes.
 
-13. **[arsenal.md](arsenal.md)** — word-keyed bomb variants: the
+15. **[arsenal.md](arsenal.md)** — word-keyed bomb variants: the
     bomb/grep/sed design triangle (kills+digs / kills / digs), the typed
     FIFO arsenal, chain-reaction matrix, and yank/put as wave 2.
 
 Working roadmap:
 
-14. **[TODO.md](TODO.md)** — the phased enhancement roadmap (menu, story,
+16. **[TODO.md](TODO.md)** — the phased enhancement roadmap (menu, story,
     new motions, bomb variants, sky v2, campaign growth). Pick the topmost
     unchecked item; each entry is self-contained with acceptance criteria.
 
@@ -63,11 +70,11 @@ edits. The world advances one tick per completed keystroke command — so
 Bombs aren't picked up; they're earned by opening a broken code-tile with
 `i` and fixing the word inside using real vim edit commands, then armed and
 dropped with `x`. Motions themselves are collectible: each level's keycap
-pickup adds its motion group to your permanent vocabulary. Twenty levels
+pickup adds its motion group to your permanent vocabulary. 21 levels
 teach vim from `hjkl` up through `ciw`, `Ctrl-u`/`Ctrl-d` (a cloud
 layer), and macros, tightening keystroke budgets as the moveset grows, so the game's
-difficulty curve **is** a vim curriculum — and every level is proven by
-test to be solvable along multiple distinct routes, with par achievable.
+difficulty curve **is** a vim curriculum. Every level has an exact par proof;
+most levels also have named alternate routes verified by test.
 
 ## Source of truth
 

@@ -373,42 +373,47 @@ export function buildSprites(): SpriteSet {
   ], UP);
 
   // ---------------- sky terrain: cloud floor / thunderhead ----------------
-  const CL: Palette = { w: '#e8f0f6', W: '#ffffff', s: '#b8cbd8', d: '#96abb8' };
+  // A puffy scalloped top (three rounded lobes) so cloud floor reads as
+  // "standing on top of a cumulus bank," not a recolored wall block; the
+  // underside shades to blue-grey, like sunlight from above.
+  const CL: Palette = { w: '#eef5fb', W: '#ffffff', b: '#cfe0ee', s: '#a8bfd1', d: '#8aa4b8' };
   const cloud = frame([
+    '..W....W....W...',
+    '.WWW..WWW..WWW..',
+    'wwwwwwwwwwwwwwww',
+    'wwwwwwwwwwwwwwww',
+    'wwwwwwwwwwwWwwww',
+    'wwwwWwwwwwwwwwww',
+    'wwwwwwwwwwwwwWww',
+    'wwWwwwwwwwwwwwww',
+    'wwwwwwwwWwwwwwww',
+    'wwwwwwwwwwwwwwww',
+    'wwwwwwwwwwwwwwww',
+    'wwwwwwwwwwwwwwww',
+    'bbbbbbbbbbbbbbbb',
+    'bbbbbbbbbbbbbbbb',
     'ssssssssssssssss',
-    'swwwwwwwwwwwwwws',
-    'swWWwwwwwwWWwwws',
-    'swwwwwwwwwwwwwws',
-    'swwwwwWWwwwwwwws',
-    'swwwwwwwwwwwwwws',
-    'swwwwwwwwwwWWwws',
-    'swwWWwwwwwwwwwws',
-    'swwwwwwwwwwwwwws',
-    'swwwwwwWWwwwwwws',
-    'swwwwwwwwwwwwwws',
-    'swWWwwwwwwwWWwws',
-    'swwwwwwwwwwwwwws',
-    'swwwwwWWwwwwwwws',
-    'sddddddddddddddd',
-    'ssssssssssssssss',
+    'dddddddddddddddd',
   ], CL);
-  const TH: Palette = { k: '#3a4654', K: '#4c5a6c', o: '#242c38', l: '#6a7a8e' };
+  // Thunderhead: a bruised, jagged-cap storm cloud with a lightning crack
+  // lit from within — dark and ominous, not just a dim-palette wall.
+  const TH: Palette = { K: '#4c5a6c', k: '#333d4d', o: '#20242f', l: '#f2e9a8' };
   const thunderhead = frame([
+    '...K.....K...K..',
+    '..KKK...KKK.KKK.',
+    'KKKKKKKKKKKKKKKK',
+    'KKKKKKKKKKKKKKKK',
+    'KKKKKKKKlKKKKKKK',
+    'KKKKKKKllKKKoKKK',
+    'KKKoKKKKllKKKKKK',
+    'KKKKKKKKlKKKKKKK',
+    'KKKKKKKKKKKKKKKK',
+    'KKKKKoKKKKKoKKKK',
+    'KKKKKKKKKKKKKKKK',
+    'kkkkkkkkkkkkkkkk',
+    'kkkkkkkkkkkkkkkk',
     'oooooooooooooooo',
-    'oKKKKKKKKKKKKKko',
-    'oKllKKKKKKllKKko',
-    'oKKKKKKKKKKKKKko',
-    'oKKKKkkKKKKKKKko',
-    'oKKKKKKKKKKllKko',
-    'oKkkKKKKKKKKKKko',
-    'oKKKKKKkkKKKKKko',
-    'oKKKKKKKKKKKKKko',
-    'oKllKKKKKKKkkKko',
-    'oKKKKKKKKKKKKKko',
-    'oKKKKkkKKKKKKKko',
-    'oKKKKKKKKKllKKko',
-    'okKKKKKKKKKKKkko',
-    'okkkkkkkkkkkkkko',
+    'oooooooooooooooo',
     'oooooooooooooooo',
   ], TH);
 
